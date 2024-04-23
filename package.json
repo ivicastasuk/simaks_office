@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "daisyui": "^4.10.2",
     "electron": "^30.0.1"
   },
   "dependencies": {
