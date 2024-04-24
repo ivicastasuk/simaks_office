@@ -2,10 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-.bg-custom-light {
-    background-color: #f9fafb; /* Svetla pozadina */
+/* @layer base {
+
+    html,
+    body {
+        background-color: transparent;
+    }
+} */
+
+@layer components {
+    .menu-item {
+        @apply text-base hover:bg-primary cursor-pointer;
+    }
 }
-  
-.dark .bg-custom-dark {
-    background-color: #1f2937; /* Tamna pozadina */
+
+@layer utilities {
+    #titlebar {
+        -webkit-app-region: drag;
+    }
+
+    #titlebar .nobar {
+        -webkit-app-region: no-drag;
+    }
 }

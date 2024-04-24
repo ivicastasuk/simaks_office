@@ -26,7 +26,7 @@ async function fetchData() {
 
     try {
         connection = await connect();
-        const [rows, fields] = await connection.query('SELECT * FROM users');
+        const [ rows, fields ] = await connection.query('SELECT * FROM users');
         return rows;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -49,7 +49,7 @@ async function insertData(tableName, data) {
 
         // Priprema delova upita
         const keys = Object.keys(data);
-        const values = keys.map(key => data[key]);
+        const values = keys.map(key => data[ key ]);
         const placeholders = keys.map(() => '?').join(', ');  // Kreira string placeholdera
         const columnNames = keys.join(', ');
 

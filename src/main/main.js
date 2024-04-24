@@ -1,26 +1,42 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { join } = require('path');
 const { fetchData, insertData } = require('./db/database.js');
-const { toggleTheme } = require('./dom/dom.js');
+// const { toggleTheme } = require('./dom/dom.js');
 
 function createWindow() {
-    const win = new BrowserWindow({
+    const mainWindow = new BrowserWindow({
+        minWidth: 1024,
         width: 1024,
+        minHeight: 768,
         height: 768,
+        frame: false,
+        transparent: false,
+        icon: join(__dirname, '../renderer/img/serbia.png'),
         webPreferences: {
             preload: join(__dirname, '../preload/preload.js'),
             contextIsolation: true,
             nodeIntegration: false
         }
     });
-    win.loadFile('./src/renderer/index.html');
+    mainWindow.loadFile('./src/renderer/index.html');
+    mainWindow.setMenu(null);
+
+    ipcMain.on('close-window', () => {
+        mainWindow.close();
+    });
+    ipcMain.on('minimize-window', () => {
+        mainWindow.minimize();
+    });
+    ipcMain.on('maximize-window', () => {
+        mainWindow.maximize();
+    });
+    ipcMain.on('unmaximize-window', () => {
+        mainWindow.unmaximize();
+    });
+
 }
 
 app.whenReady().then(createWindow);
-
-ipcMain.on('toggle-theme', (event) => {
-    event.reply('theme-toggled');
-});
 
 ipcMain.on('fetch-data', async (event) => {
     try {

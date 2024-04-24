@@ -1,58 +1,33 @@
-// document.getElementById('theme-toggle').addEventListener('click', function () {
-// 	// const bodyClass = document.body.classList;
-// 	// bodyClass.toggle('dark');
 
-// 	// // Opcionalno: Sačuvajte korisnikov izbor u localStorage
-// 	// if (bodyClass.contains('dark')) {
-// 	// localStorage.setItem('theme', 'dark');
-// 	// } else {
-// 	// localStorage.setItem('theme', 'light');
-// 	// }
-
-// 	const docEl = document.documentElement;
-// 	if (docEl.getAttribute('data-theme') === "light" || docEl.getAttribute('data-theme') == null || docEl.getAttribute('data-theme') == "") {
-// 		docEl.setAttribute('data-theme', 'dark');
-// 		localStorage.setItem('theme', 'dark');
-// 	} else {
-// 		docEl.setAttribute('data-theme', 'light');
-// 		localStorage.setItem('theme', 'light');
-// 	}
-// });
-
-// Provera localStorage za postavljenu temu na učitavanju
-document.addEventListener('DOMContentLoaded', () => {
-	if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-		document.body.classList.add('dark');
+// Promena teme
+document.getElementById('theme-toggle').addEventListener('click', function () {
+	const docEl = document.documentElement;
+	if (docEl.getAttribute('data-theme') === "emerald" || docEl.getAttribute('data-theme') == null || docEl.getAttribute('data-theme') == "") {
+		docEl.setAttribute('data-theme', 'dark');
+		localStorage.setItem('theme', 'dark');
 	} else {
-		document.body.classList.remove('dark');
+		docEl.setAttribute('data-theme', 'emerald');
+		localStorage.setItem('theme', 'emerald');
 	}
 });
 
+// Provera localStorage za postavljenu temu na učitavanju
+document.addEventListener('DOMContentLoaded', () => {
+	if (localStorage.getItem('theme') === 'emerald' || (!('theme' in localStorage) && !(window.matchMedia('(prefers-color-scheme: dark)').matches))) {
+		document.documentElement.setAttribute('data-theme', 'emerald');
+		// document.body.classList.add('dark');
+	} else {
+		document.documentElement.setAttribute('data-theme', 'dark');
+		// document.body.classList.remove('dark');
+	}
+});
+
+// Slanje zahteva za preuzimanje podataka iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
 	window.electronAPI.fetchData();
 });
 
-document.getElementById('insertData').addEventListener('click', () => {
-	const data = {
-		id: null,
-		username: 'simaks',
-		password: 'simaks123',
-		is_logged: 0
-	};
-	window.electronAPI.insertData('users', data);
-});
-
-document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
-	tab.addEventListener('click', () => {
-		document.querySelectorAll('.tabs .tab').forEach(node => node.classList.remove('tab-active'));
-		tab.classList.add('tab-active');
-		document.querySelectorAll('#content1, #content2, #content3, #content4').forEach(content => {
-			content.classList.add('hidden');
-		});
-		document.querySelector(`#content${index + 1}`).classList.remove('hidden');
-	});
-});
-
+// Primanje podataka iz baze
 window.electronAPI.onDataFetched((data) => {
 	// Uzimanje referenci na kontejner
 	const container = document.getElementById('data-container');
@@ -113,3 +88,83 @@ window.electronAPI.onDataFetched((data) => {
 	// Dodavanje kompletne tabele u kontejner
 	container.appendChild(table);
 });
+
+// Ubacivanje podataka u bazu
+document.getElementById('insertData').addEventListener('click', () => {
+	const data = {
+		id: null,
+		username: 'simaks',
+		password: 'simaks123',
+		is_logged: 0
+	};
+	window.electronAPI.insertData('users', data);
+});
+
+// Postavljanje layouta sa tabovima
+document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
+	tab.addEventListener('click', () => {
+		document.querySelectorAll('.tabs .tab').forEach(node => node.classList.remove('tab-active'));
+		tab.classList.add('tab-active');
+		document.querySelectorAll('#content1, #content2, #content3, #content4').forEach(content => {
+			content.classList.add('hidden');
+		});
+		document.querySelector(`#content${index + 1}`).classList.remove('hidden');
+	});
+});
+
+// Zatvaranje prozora
+document.querySelectorAll('[role=closeWindow]').forEach(el => {
+	el.addEventListener('click', closeWindow);
+});
+
+function closeWindow() {
+	window.electronAPI.closeWindow();
+}
+
+// Minimizovanje prozora
+document.querySelectorAll('[role=minimizeWindow]').forEach(el => {
+	el.addEventListener('click', minimizeWindow);
+});
+
+function minimizeWindow() {
+	window.electronAPI.minimizeWindow();
+}
+
+// Maksimizovanje prozora
+document.querySelectorAll('[role=maximizeWindow]').forEach(el => {
+	el.addEventListener('click', maximizeWindow);
+});
+
+function maximizeWindow() {
+	toggleMaximize();
+	window.electronAPI.maximizeWindow();
+}
+
+// Unmaksimizovanje prozora
+document.querySelectorAll('[role=unmaximizeWindow]').forEach(el => {
+	el.addEventListener('click', unmaximizeWindow);
+});
+
+function unmaximizeWindow() {
+	toggleMaximize();
+	window.electronAPI.unmaximizeWindow();
+}
+
+function toggleMaximize() {
+	const maximize = document.querySelectorAll('[role=maximizeWindow]');
+	const unmaximize = document.querySelectorAll('[role=unmaximizeWindow]');
+	maximize.forEach(el => {
+		if (el.classList.contains('hidden')) {
+			el.classList.remove('hidden');
+		} else {
+			el.classList.add('hidden');
+		}
+	});
+	unmaximize.forEach(el => {
+		if (el.classList.contains('hidden')) {
+			el.classList.remove('hidden');
+		} else {
+			el.classList.add('hidden');
+		}
+	});
+}
