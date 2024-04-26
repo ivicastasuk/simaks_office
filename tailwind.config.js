@@ -10,6 +10,9 @@ module.exports = {
 				accent: '#0892A5',
 				dark: '#102030',
 				light: '#FDFFFC'
+			},
+			height: {
+				main: "calc(100vh - 32px)"
 			}
 		},
 	},

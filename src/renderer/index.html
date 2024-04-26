@@ -5,9 +5,9 @@
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://api.simaks.rs; img-src 'self' https://images.simaks.rs; style-src 'self' 'unsafe-inline'; font-src 'self';">
         <link rel="stylesheet" href="./css/main.css">
     </head>
-    <body class="w-screen h-screen">
-		<div class="w-full h-full max-h-full">
-			<header id="titlebar" class="w-full flex justify-between items-center bg-slate-300 text-slate-700 px-4">
+    <body class="w-full h-full">
+		<div class="w-full h-full grid grid-rows-[32px_1fr]">
+			<header id="titlebar" class="w-full h-full flex justify-between items-center bg-slate-300 text-slate-700 px-4">
 				<div class="flex justify-start items-center gap-4">
 					<div class="flex justify-start items-center">
 						<img id="logo" src="./img/serbia.png" alt="Kancelarijski asistent" class="h-8 block">
@@ -43,17 +43,29 @@
 					</ul>
 				</div>
 			</header>
-			<main>
+			<main class="w-full h-main flex flex-col">
 				<div class="tabs tabs-boxed rounded-none">
 					<a class="tab tab-active">Korisnički profil</a>
 					<a class="tab">Podešavanja</a>
 					<a class="tab">Baze</a>
 					<a class="tab">Ponude</a>
 				</div>
-				<div id="content1" class="p-4">Tab content 1</div>
+				<!-- Tab: Korisnički profil -->
+				<div id="content1" class="w-full h-full p-4 overflow-y-auto">
+					<div class="w-full h-full grid grid-cols-[2fr_1fr] gap-4">
+						<div class="w-full flex">col 1</div>
+						<div class="w-full flex flex-col justify-start items-start gap-4">
+							<div class="border rounded-md shadow-md">
+								<img src="./img/products/ar-0001.jpg" class="w-full block">
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Tab: Podešavanja -->
 				<div id="content2" class="p-4 hidden">
 
 				</div>
+				<!-- Tab: Baze -->
 				<div id="content3" class="p-4 hidden">
 					<div class="flex items-center justify-center gap-4 p-4">
 						<button id="fetchData" class="p-2 btn btn-primary">Izvuci podatke</button>
@@ -61,6 +73,7 @@
 					</div> 			
 					<div id="data-container"></div>
 				</div>
+				<!-- Tab: Rad sa ponudama -->
 				<div id="content4" class="p-4 hidden">Tab content 4</div>
 			</main>
 		</div>

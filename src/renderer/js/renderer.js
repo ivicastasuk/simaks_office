@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Slanje zahteva za preuzimanje podataka iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
-	window.electronAPI.fetchData();
+	window.electronAPI.fetchData('users');
 });
 
 // Primanje podataka iz baze

@@ -38,9 +38,9 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-ipcMain.on('fetch-data', async (event) => {
+ipcMain.on('fetch-data', async (event, { tableName, columns, condition }) => {
     try {
-        const data = await fetchData();
+        const data = await fetchData(tableName, columns, condition);
         event.reply('data-fetched', data);
     } catch (error) {
         console.error('Error fetching data:', error);

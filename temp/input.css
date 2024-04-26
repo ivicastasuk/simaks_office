@@ -2,13 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* @layer base {
+@layer base {
 
-    html,
-    body {
-        background-color: transparent;
+    * {
+        box-sizing: border-box;
     }
-} */
+}
 
 @layer components {
     .menu-item {
