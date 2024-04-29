@@ -13,6 +13,10 @@
     .menu-item {
         @apply text-base hover:bg-primary cursor-pointer;
     }
+
+    .input-standard {
+        @apply border-b px-2 py-1 text-right bg-transparent;
+    }
 }
 
 @layer utilities {
