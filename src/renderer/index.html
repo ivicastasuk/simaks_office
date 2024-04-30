@@ -66,16 +66,65 @@
 
 				</div>
 				<!-- Tab: Baze -->
-				<div id="content3" class="p-4 hidden">
-					<div class="w-full flex flex-row justify-between items-center gap-4">
-						<div class="flex flex-col justify-start items-center">
-							<label for="code">Šifra</label>
-							<input type="text" name="code" class="input-standard">
-						</div>
-					</div>
+				<div id="content3" class="w-full p-4 hidden">
+					<table class="w-full">
+						<thead>
+							<tr>
+								<th class="w-[5%]">Šifra</th>
+								<th class="w-[5%]">Tip</th>
+								<th class="w-[8%]">Proizvođač</th>
+								<th class="w-[10%]">Naziv</th>
+								<th class="w-[6%]">Oznaka</th>
+								<th class="w-[5%]">Slika</th>
+								<th class="w-[15%]">Opis</th>
+								<th class="w-[5%]">Stavke</th>
+								<th class="w-[5%]">Jed. mere</th>
+								<th class="w-[8%]">Cena</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="w-[5%]">
+									<input type="text" name="code" class="input-standard w-full">
+								</td>
+								<td class="w-[5%]">
+									<select name="type" class="w-full input-standard text-left">
+										<option value="P">Pojedinačni</option>
+										<option value="G">Grupni</option>
+									</select>
+								</td>
+								<td class="w-[8%]">
+									<input type="text" name="manufacturer" class="w-full input-standard">
+								</td>
+								<td class="w-[10%]">
+									<input type="text" name="name" class="w-full input-standard">
+								</td>
+								<td class="w-[6%]">
+									<input type="text" name="model" class="w-full input-standard">
+								</td>
+								<td class="w-[5%]">
+									<input type="file" name="image" class="w-full input-standard">
+								</td>
+								<td class="w-[15%]">
+									<textarea name="description" rows="1" class="w-full input-standard"></textarea>
+								</td>
+								<td class="w-[5%]"></td>
+								<td class="w-[5%]">
+									<select name="units" class="w-full input-standard text-left">
+										<option value="kom">Komad</option>
+										<option value="kpl">Komplet</option>
+										<option value="set">Set</option>
+									</select>
+								</td>
+								<td class="w-[8%]">
+									<input type="number" name="price" class="w-full input-standard">
+								</td>
+							</tr>
+						</tbody>
+					</table>
 					<div class="flex items-center justify-center gap-4 p-4">
 						<button id="fetchData" class="p-2 btn btn-primary">Izvuci podatke</button>
-						<button id="insertData" class="p-2 btn">Upisi podatke</button>
+						<button id="insertData" class="p-2 btn btn-primary">Upisi podatke</button>
 					</div> 			
 					<div id="data-container"></div>
 				</div>

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Slanje zahteva za preuzimanje podataka iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
-	window.electronAPI.fetchData('users');
+	window.electronAPI.fetchData('products');
 });
 
 // Primanje podataka iz baze
@@ -42,7 +42,7 @@ window.electronAPI.onDataFetched((data) => {
 	// Kreiranje i popunjavanje zaglavlja tabele
 	const thead = document.createElement('thead');
 	const headerRow = document.createElement('tr');
-	const headers = [ "ID", "Username", "Password", "Is Logged" ];
+	const headers = [ "Šifra", "Tip", "Proizvođač", "Naziv", "Oznaka", "Slika", "Opis", "Stavke", "JM", "Cena" ];
 	headers.forEach(text => {
 		const th = document.createElement('th');
 		th.textContent = text;
@@ -58,25 +58,55 @@ window.electronAPI.onDataFetched((data) => {
 		const tr = document.createElement('tr');
 		tr.className = 'hover';
 
-		// Kreiranje i dodavanje ćelija za ID
-		const tdId = document.createElement('td');
-		tdId.textContent = row.id;
-		tr.appendChild(tdId);
+		// Kreiranje i dodavanje ćelija za sifru
+		const tdCode = document.createElement('td');
+		tdCode.textContent = row.code;
+		tr.appendChild(tdCode);
 
-		// Kreiranje i dodavanje ćelija za Username
-		const tdUsername = document.createElement('td');
-		tdUsername.textContent = row.username;
-		tr.appendChild(tdUsername);
+		// Kreiranje i dodavanje ćelija za tip
+		const tdType = document.createElement('td');
+		tdType.textContent = row.type;
+		tr.appendChild(tdType);
 
-		// Kreiranje i dodavanje ćelija za Password
-		const tdPassword = document.createElement('td');
-		tdPassword.textContent = row.password;
-		tr.appendChild(tdPassword);
+		// Kreiranje i dodavanje ćelija za proizvodjaca
+		const tdManufacturer = document.createElement('td');
+		tdManufacturer.textContent = row.manufacturer;
+		tr.appendChild(tdManufacturer);
 
-		// Kreiranje i dodavanje ćelija za Is Logged
-		const tdIsLogged = document.createElement('td');
-		tdIsLogged.textContent = row.is_logged;
-		tr.appendChild(tdIsLogged);
+		// Kreiranje i dodavanje ćelija za naziv
+		const tdName = document.createElement('td');
+		tdName.textContent = row.name;
+		tr.appendChild(tdName);
+
+		// Kreiranje i dodavanje ćelija za model
+		const tdModel = document.createElement('td');
+		tdModel.textContent = row.model;
+		tr.appendChild(tdModel);
+
+		// Kreiranje i dodavanje ćelija za sliku
+		const tdImage = document.createElement('td');
+		tdImage.textContent = row.img_url;
+		tr.appendChild(tdImage);
+
+		// Kreiranje i dodavanje ćelija za opis
+		const tdDescription = document.createElement('td');
+		tdDescription.textContent = row.description;
+		tr.appendChild(tdDescription);
+
+		// Kreiranje i dodavanje ćelija za stavke
+		const tdItems = document.createElement('td');
+		tdItems.textContent = row.items;
+		tr.appendChild(tdItems);
+
+		// Kreiranje i dodavanje ćelija za jm
+		const tdUnit = document.createElement('td');
+		tdUnit.textContent = row.unit;
+		tr.appendChild(tdUnit);
+
+		// Kreiranje i dodavanje ćelija za cenu
+		const tdPrice = document.createElement('td');
+		tdPrice.textContent = row.price;
+		tr.appendChild(tdPrice);
 
 		// Dodavanje reda u telo tabele
 		tbody.appendChild(tr);
@@ -91,13 +121,30 @@ window.electronAPI.onDataFetched((data) => {
 
 // Ubacivanje podataka u bazu
 document.getElementById('insertData').addEventListener('click', () => {
+	const code = document.querySelector("input[name=code]").value;
+	const type = document.querySelector("select[name=type]").value;
+	const manufacturer = document.querySelector("input[name=manufacturer]").value;
+	const name = document.querySelector("input[name=name]").value;
+	const model = document.querySelector("input[name=model]").value;
+	// const image = document.querySelector("input[name=image]").value;
+	const description = document.querySelector("textarea[name=description]").value;
+	// const items = document.querySelector("input[name=items]").value;
+	const unit = document.querySelector("select[name=units]").value;
+	const price = document.querySelector("input[name=price]").value;
 	const data = {
 		id: null,
-		username: 'simaks',
-		password: 'simaks123',
-		is_logged: 0
+		code: code,
+		type: type,
+		manufacturer: manufacturer,
+		name: name,
+		model: model,
+		// image: image,
+		description: description,
+		// items: items,
+		unit: unit,
+		price: price
 	};
-	window.electronAPI.insertData('users', data);
+	window.electronAPI.insertData('products', data);
 });
 
 // Postavljanje layouta sa tabovima
