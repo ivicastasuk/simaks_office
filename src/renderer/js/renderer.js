@@ -85,7 +85,7 @@ window.electronAPI.onDataFetched((data) => {
 
 		// Kreiranje i dodavanje ćelija za sliku
 		const tdImage = document.createElement('td');
-		tdImage.textContent = row.img_url;
+		tdImage.innerHTML = `<img src="./img/products/${row.img_url}" class="w-12 h-12 border">`;
 		tr.appendChild(tdImage);
 
 		// Kreiranje i dodavanje ćelija za opis
@@ -105,7 +105,8 @@ window.electronAPI.onDataFetched((data) => {
 
 		// Kreiranje i dodavanje ćelija za cenu
 		const tdPrice = document.createElement('td');
-		tdPrice.textContent = row.price;
+		tdPrice.textContent = parseFloat(row.price).toFixed(2);
+		tdPrice.setAttribute('class', 'text-right');
 		tr.appendChild(tdPrice);
 
 		// Dodavanje reda u telo tabele
@@ -120,31 +121,34 @@ window.electronAPI.onDataFetched((data) => {
 });
 
 // Ubacivanje podataka u bazu
-document.getElementById('insertData').addEventListener('click', () => {
-	const code = document.querySelector("input[name=code]").value;
-	const type = document.querySelector("select[name=type]").value;
-	const manufacturer = document.querySelector("input[name=manufacturer]").value;
-	const name = document.querySelector("input[name=name]").value;
-	const model = document.querySelector("input[name=model]").value;
-	// const image = document.querySelector("input[name=image]").value;
-	const description = document.querySelector("textarea[name=description]").value;
-	// const items = document.querySelector("input[name=items]").value;
-	const unit = document.querySelector("select[name=units]").value;
-	const price = document.querySelector("input[name=price]").value;
-	const data = {
-		id: null,
-		code: code,
-		type: type,
-		manufacturer: manufacturer,
-		name: name,
-		model: model,
-		// image: image,
-		description: description,
-		// items: items,
-		unit: unit,
-		price: price
-	};
-	window.electronAPI.insertData('products', data);
+document.querySelectorAll('button[name=insertData]').forEach((button, index) => {
+	button.addEventListener('click', () => {
+		const code = document.querySelector("input[name=code]").value;
+		const type = document.querySelector("select[name=type]").value;
+		const manufacturer = document.querySelector("input[name=manufacturer]").value;
+		const name = document.querySelector("input[name=name]").value;
+		const model = document.querySelector("input[name=model]").value;
+		const image = document.querySelector("input[name=image]").files[0].name;
+		const description = document.querySelector("textarea[name=description]").value;
+		// const items = document.querySelector("input[name=items]").value;
+		const unit = document.querySelector("select[name=units]").value;
+		const price = document.querySelector("input[name=price]").value;
+		const data = {
+			id: null,
+			code: code,
+			type: type,
+			manufacturer: manufacturer,
+			name: name,
+			model: model,
+			img_url: image,
+			description: description,
+			// items: items,
+			unit: unit,
+			price: price
+		};
+		window.electronAPI.insertData('products', data);
+	});
+// document.getElementById('insertData').addEventListener('click', () => {
 });
 
 // Postavljanje layouta sa tabovima
@@ -215,3 +219,48 @@ function toggleMaximize() {
 		}
 	});
 }
+
+document.getElementById("imageContainer").addEventListener("click", openFileDialog);
+// document.getElementById("imgInput").addEventListener("change", previewImage);
+
+function openFileDialog(){
+	document.getElementById("imgInput").click();
+}
+
+function previewImage() {
+	const file = document.getElementById('imgInput').files[0];
+		if (!file) {
+		console.log('Nijedan fajl nije izabran.');
+		return;
+	}
+
+	const reader = new FileReader();
+
+	reader.onload = function(e) {
+		document.getElementById('imageContainer').style.backgroundImage = `url(${e.target.result})`;
+	};
+
+	reader.onerror = function(e) {
+		console.error('Došlo je do greške pri čitanju fajla:', e);
+	};
+
+	reader.readAsDataURL(file);
+}
+
+document.getElementById('imgInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+        const response = await window.electronAPI.saveImage(file.name, event.target.result);
+        if (response.success) {
+            document.getElementById('imagePreview').src = response.path;
+        } else {
+            console.error('Failed to save the image:', response.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+});

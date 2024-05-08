@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { join } = require('path');
 const { fetchData, insertData } = require('./db/database.js');
+const fs = require('fs');
+// const { path } = require('path');
 // const { toggleTheme } = require('./dom/dom.js');
 
 function createWindow() {
@@ -15,11 +17,14 @@ function createWindow() {
         webPreferences: {
             preload: join(__dirname, '../preload/preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            webSecurity: true
         }
     });
     mainWindow.loadFile('./src/renderer/index.html');
     mainWindow.setMenu(null);
+    mainWindow.webContents.openDevTools();
+    mainWindow.maximize();
 
     ipcMain.on('close-window', () => {
         mainWindow.close();
@@ -54,5 +59,17 @@ ipcMain.on('insert-data', async (event, { tableName, data }) => {
     } catch (error) {
         console.error('Error inserting data:', error);
         event.reply('insert-error', error.message);
+    }
+});
+
+ipcMain.handle('save-image', async (event, fileName, buffer) => {
+    const savePath = join(__dirname, '../renderer/img/products', fileName);
+    console.log(savePath);
+    try {
+        fs.writeFileSync(savePath, Buffer.from(buffer));
+        return { success: true, path: savePath };
+    } catch (err) {
+        console.error('Error saving image:', err);
+        return { success: false, message: 'Failed to save image', error: err };
     }
 });

@@ -2015,6 +2015,10 @@ input.tab:checked + .tab-content,
   display: none;
 }
 
+.h-12 {
+  height: 3rem;
+}
+
 .h-8 {
   height: 2rem;
 }
@@ -2027,20 +2031,8 @@ input.tab:checked + .tab-content,
   height: calc(100vh - 32px);
 }
 
-.w-full {
-  width: 100%;
-}
-
-.w-1\/12 {
-  width: 8.333333%;
-}
-
-.w-2\/12 {
-  width: 16.666667%;
-}
-
-.w-\[5\%\] {
-  width: 5%;
+.w-12 {
+  width: 3rem;
 }
 
 .w-\[10\%\] {
@@ -2051,12 +2043,20 @@ input.tab:checked + .tab-content,
   width: 15%;
 }
 
+.w-\[5\%\] {
+  width: 5%;
+}
+
 .w-\[6\%\] {
   width: 6%;
 }
 
 .w-\[8\%\] {
   width: 8%;
+}
+
+.w-full {
+  width: 100%;
 }
 
 .cursor-pointer {
@@ -2075,10 +2075,6 @@ input.tab:checked + .tab-content,
 
 .grid-rows-\[32px_1fr\] {
   grid-template-rows: 32px 1fr;
-}
-
-.flex-row {
-  flex-direction: row;
 }
 
 .flex-col {
@@ -2117,6 +2113,10 @@ input.tab:checked + .tab-content,
   gap: 1rem;
 }
 
+.gap-2 {
+  gap: 0.5rem;
+}
+
 .overflow-y-auto {
   overflow-y: auto;
 }
@@ -2138,6 +2138,14 @@ input.tab:checked + .tab-content,
   background-color: rgb(203 213 225 / var(--tw-bg-opacity));
 }
 
+.bg-cover {
+  background-size: cover;
+}
+
+.bg-center {
+  background-position: center;
+}
+
 .fill-current {
   fill: currentColor;
 }
@@ -2157,6 +2165,10 @@ input.tab:checked + .tab-content,
 
 .text-left {
   text-align: left;
+}
+
+.text-right {
+  text-align: right;
 }
 
 .text-base {

@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     closeWindow: () => ipcRenderer.send('close-window'),
     minimizeWindow: () => ipcRenderer.send('minimize-window'),
     maximizeWindow: () => ipcRenderer.send('maximize-window'),
-    unmaximizeWindow: () => ipcRenderer.send('unmaximize-window')
+    unmaximizeWindow: () => ipcRenderer.send('unmaximize-window'),
+    saveImage: (filePath, buffer) => ipcRenderer.invoke('save-image', filePath, buffer)
 });
