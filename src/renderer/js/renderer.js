@@ -264,3 +264,29 @@ document.getElementById('imgInput').addEventListener('change', function(event) {
     };
     reader.readAsArrayBuffer(file);
 });
+
+// SweetAlert2 funkcije
+function showAlert() {
+    window.sweetAlert.fire({
+		title: 'Da li ste sigurni?',
+		text: 'Nećete moći da povratite ovu fiktivnu datoteku!',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Da, obriši je!'
+    }).then((result) => {
+		if (result.isConfirmed) {
+			window.sweetAlert.fire(
+			'Obrisano!',
+			'Vaša fiktivna datoteka je obrisana.',
+			'success'
+			);
+		}
+    });
+}
+
+function showToast() {
+	window.sweetAlert.toast({
+		title: 'Obaveštenje',
+		text: 'Ovo je primer toast poruke'
+	});
+}
