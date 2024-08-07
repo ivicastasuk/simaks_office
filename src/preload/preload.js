@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const Swal = require('sweetalert2');
+// const Swal = require('sweetalert2');
+
+console.log('Preload script loaded successfully!');
 
 contextBridge.exposeInMainWorld('electronAPI', {
     fetchData: (tableName, columns, condition) => ipcRenderer.send('fetch-data', { tableName, columns, condition }),
@@ -9,7 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     minimizeWindow: () => ipcRenderer.send('minimize-window'),
     maximizeWindow: () => ipcRenderer.send('maximize-window'),
     unmaximizeWindow: () => ipcRenderer.send('unmaximize-window'),
-    saveImage: (filePath, buffer) => ipcRenderer.invoke('save-image', filePath, buffer)
+    saveImage: (filePath, buffer) => ipcRenderer.invoke('save-image', filePath, buffer),
 });
 
 // contextBridge.exposeInMainWorld('sweetAlert', {

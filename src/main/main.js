@@ -5,7 +5,11 @@ const fs = require('fs');
 // const { path } = require('path');
 // const { toggleTheme } = require('./dom/dom.js');
 
+
+
 function createWindow() {
+    console.log("Creating window...");
+    
     const mainWindow = new BrowserWindow({
         minWidth: 1024,
         width: 1024,
@@ -20,12 +24,13 @@ function createWindow() {
             nodeIntegration: false,
             webSecurity: true
         }
-    });
+    }); 
+    
     mainWindow.loadFile('./src/renderer/index.html');
     mainWindow.setMenu(null);
     mainWindow.webContents.openDevTools();
     mainWindow.maximize();
-
+    
     ipcMain.on('close-window', () => {
         mainWindow.close();
     });
@@ -38,7 +43,7 @@ function createWindow() {
     ipcMain.on('unmaximize-window', () => {
         mainWindow.unmaximize();
     });
-
+    
 }
 
 app.whenReady().then(createWindow);

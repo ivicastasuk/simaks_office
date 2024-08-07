@@ -1,4 +1,5 @@
-
+console.log(window.electronAPI);
+console.log(window.sweetAlert);
 // Promena teme
 document.getElementById('theme-toggle').addEventListener('click', function () {
 	const docEl = document.documentElement;
@@ -275,11 +276,11 @@ function showAlert() {
 		confirmButtonText: 'Da, obriši je!'
     }).then((result) => {
 		if (result.isConfirmed) {
-			window.sweetAlert.fire(
-			'Obrisano!',
-			'Vaša fiktivna datoteka je obrisana.',
-			'success'
-			);
+			window.sweetAlert.fire({
+			title: 'Obrisano!',
+			text: 'Vaša fiktivna datoteka je obrisana.',
+			icon: 'success'
+			});
 		}
     });
 }
