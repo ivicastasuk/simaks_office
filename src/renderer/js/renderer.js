@@ -1,5 +1,5 @@
-console.log(window.electronAPI);
-console.log(window.sweetAlert);
+// console.log(window.electronAPI);
+// console.log(window.sweetAlert);
 // Promena teme
 document.getElementById('theme-toggle').addEventListener('click', function () {
 	const docEl = document.documentElement;
@@ -129,7 +129,11 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 		const manufacturer = document.querySelector("input[name=manufacturer]").value;
 		const name = document.querySelector("input[name=name]").value;
 		const model = document.querySelector("input[name=model]").value;
-		const image = document.querySelector("input[name=image]").files[0].name;
+		if(document.querySelector("input[name=image]").value != null || document.querySelector("input[name=image]").value != ''){
+			const image = document.querySelector("input[name=image]").files[0].name;
+		} else {
+			const image = "dummy.jpg";
+		}
 		const description = document.querySelector("textarea[name=description]").value;
 		// const items = document.querySelector("input[name=items]").value;
 		const unit = document.querySelector("select[name=units]").value;
@@ -148,6 +152,12 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 			price: price
 		};
 		window.electronAPI.insertData('products', data);
+		Swal.fire({
+			title: 'Info',
+			text: 'Proizvod je uspesno dodan u bazu!',
+			icon: 'info',
+			confirmButtonText: 'OK'
+		});
 	});
 // document.getElementById('insertData').addEventListener('click', () => {
 });

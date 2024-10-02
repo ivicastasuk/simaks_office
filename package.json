@@ -13,8 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "daisyui": "^4.10.2",
-    "electron": "^31.3.1",
-    "sweetalert2": "^11.12.4"
+    "electron": "^31.3.1"
   },
   "dependencies": {
     "mysql2": "^3.9.7",
