@@ -23,9 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
-// Slanje zahteva za preuzimanje podataka iz baze
+// Slanje zahteva za preuzimanje podataka o artiklima iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
 	window.electronAPI.fetchData('products');
+});
+
+// Slanje zahteva za preuzimanje podataka o klijentima iz baze
+document.getElementById('fetchClients').addEventListener('click', () => {
+	window.electronAPI.fetchClients('clients');
 });
 
 // Primanje podataka iz baze
@@ -86,7 +91,7 @@ window.electronAPI.onDataFetched((data) => {
 
 		// Kreiranje i dodavanje ćelija za sliku
 		const tdImage = document.createElement('td');
-		tdImage.innerHTML = `<img src="./img/products/${row.img_url}" class="w-12 h-12 border">`;
+		tdImage.innerHTML = `<img src="http://simaks/img/products/${row.img_url}" class="w-12 h-12 border">`;
 		tr.appendChild(tdImage);
 
 		// Kreiranje i dodavanje ćelija za opis
@@ -121,23 +126,98 @@ window.electronAPI.onDataFetched((data) => {
 	container.appendChild(table);
 });
 
+// Primanje podataka o klijentima iz baze
+window.electronAPI.onClientsFetched((data) => {
+	// Uzimanje referenci na kontejner
+	const container = document.getElementById('clients-container');
+
+	// Brisanje prethodnih podataka
+	container.innerHTML = '';
+
+	// Kreiranje tabele
+	const table = document.createElement('table');
+	table.className = 'table';
+
+	// Kreiranje i popunjavanje zaglavlja tabele
+	const thead = document.createElement('thead');
+	const headerRow = document.createElement('tr');
+	const headers = [ "Naziv firme", "Adresa", "Grad", "PIB", "MB" ];
+	headers.forEach(text => {
+		const th = document.createElement('th');
+		th.textContent = text;
+		headerRow.appendChild(th);
+	});
+	thead.appendChild(headerRow);
+	table.appendChild(thead);
+
+	// Kreiranje tela tabele
+	const tbody = document.createElement('tbody');
+
+	data.forEach(row => {
+		const tr = document.createElement('tr');
+		tr.className = 'hover';
+
+		// Kreiranje i dodavanje ćelija za naziv
+		const tdName = document.createElement('td');
+		tdName.textContent = row.name;
+		tr.appendChild(tdName);
+
+		// Kreiranje i dodavanje ćelija za adresu
+		const tdAddress = document.createElement('td');
+		tdAddress.textContent = row.address;
+		tr.appendChild(tdAddress);
+
+		// Kreiranje i dodavanje ćelija za grad
+		const tdCity = document.createElement('td');
+		tdCity.textContent = row.city;
+		tr.appendChild(tdCity);
+
+		// Kreiranje i dodavanje ćelija za pib
+		const tdPIB = document.createElement('td');
+		tdPIB.textContent = row.pib;
+		tr.appendChild(tdPIB);
+
+		// Kreiranje i dodavanje ćelija za mb
+		const tdMB = document.createElement('td');
+		tdMB.textContent = row.mb;
+		tr.appendChild(tdMB);
+
+		// Dodavanje reda u telo tabele
+		tbody.appendChild(tr);
+	});
+
+	// Dodavanje tela tabele u tabelu
+	table.appendChild(tbody);
+
+	// Dodavanje kompletne tabele u kontejner
+	container.appendChild(table);
+});
+
 // Ubacivanje podataka u bazu
 document.querySelectorAll('button[name=insertData]').forEach((button, index) => {
-	button.addEventListener('click', () => {
+	button.addEventListener('click', async () => {
 		const code = document.querySelector("input[name=code]").value;
 		const type = document.querySelector("select[name=type]").value;
 		const manufacturer = document.querySelector("input[name=manufacturer]").value;
 		const name = document.querySelector("input[name=name]").value;
 		const model = document.querySelector("input[name=model]").value;
-		if(document.querySelector("input[name=image]").value != null || document.querySelector("input[name=image]").value != ''){
-			const image = document.querySelector("input[name=image]").files[0].name;
-		} else {
-			const image = "dummy.jpg";
-		}
+		// Use the uploaded image name or a default value
+		const image = window.uploadedImageName || "dummy.jpg";
 		const description = document.querySelector("textarea[name=description]").value;
 		// const items = document.querySelector("input[name=items]").value;
 		const unit = document.querySelector("select[name=units]").value;
 		const price = document.querySelector("input[name=price]").value;
+
+		if(!code || !name || !model){
+			Swal.fire({
+				title: 'Greška',
+				text: 'Popunite sva obavezna polja...',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
+			return;
+		}
+
 		const data = {
 			id: null,
 			code: code,
@@ -151,15 +231,73 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 			unit: unit,
 			price: price
 		};
-		window.electronAPI.insertData('products', data);
-		Swal.fire({
-			title: 'Info',
-			text: 'Proizvod je uspesno dodan u bazu!',
-			icon: 'info',
-			confirmButtonText: 'OK'
-		});
+
+		try {
+			const result = await window.electronAPI.insertData('products', data);
+			Swal.fire({
+				title: 'Info',
+				text: 'Proizvod je uspesno dodan u bazu!',
+				icon: 'info',
+				confirmButtonText: 'OK'
+			});
+		} catch (error) {
+			console.error('Error inserting data:', error);
+			Swal.fire({
+				title: 'Greška',
+				text: 'Greška prilikom dodavanja podatak u bazu!',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
+		}
 	});
-// document.getElementById('insertData').addEventListener('click', () => {
+});
+
+// Ubacivanje podataka o klijentima u bazu
+document.querySelectorAll('button[name=insertClient]').forEach((button, index) => {
+	button.addEventListener('click', async () => {
+		const clientName = document.querySelector("input[name=clientName]").value;
+		const clientAddress = document.querySelector("input[name=clientAddress]").value;
+		const clientCity = document.querySelector("input[name=clientCity]").value;
+		const clientPIB = document.querySelector("input[name=clientPIB]").value;
+		const clientMB = document.querySelector("input[name=clientMB]").value;
+
+		if(!clientName){
+			Swal.fire({
+				title: 'Greška',
+				text: 'Popunite sva obavezna polja...',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
+			return;
+		}
+
+		const data = {
+			id: null,
+			name: clientName,
+			address: clientAddress,
+			city: clientCity,
+			pib: clientPIB,
+			mb: clientMB,
+		};
+
+		try {
+			const result = await window.electronAPI.insertData('clients', data);
+			Swal.fire({
+				title: 'Info',
+				text: 'Klijent je uspesno dodan u bazu!',
+				icon: 'info',
+				confirmButtonText: 'OK'
+			});
+		} catch (error) {
+			console.error('Error inserting data:', error);
+			Swal.fire({
+				title: 'Greška',
+				text: 'Greška prilikom dodavanja klijenta u bazu!',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
+		}
+	});
 });
 
 // Postavljanje layouta sa tabovima
@@ -167,7 +305,7 @@ document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
 	tab.addEventListener('click', () => {
 		document.querySelectorAll('.tabs .tab').forEach(node => node.classList.remove('tab-active'));
 		tab.classList.add('tab-active');
-		document.querySelectorAll('#content1, #content2, #content3, #content4').forEach(content => {
+		document.querySelectorAll('#content1, #content2, #content3, #content4, #content5').forEach(content => {
 			content.classList.add('hidden');
 		});
 		document.querySelector(`#content${index + 1}`).classList.remove('hidden');
@@ -258,22 +396,60 @@ function previewImage() {
 	reader.readAsDataURL(file);
 }
 
-document.getElementById('imgInput').addEventListener('change', function(event) {
+// Function to handle image upload
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch('http://simaks/api/upload-image.php', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            console.log('Image uploaded successfully:', result);
+            // Update the image preview
+            document.getElementById('imagePreview').src = URL.createObjectURL(file);
+            return result.filename; // Return the image file name from the server response
+        } else {
+            console.error('Error uploading image:', result.message);
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to upload image: ' + result.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
+            return null;
+        }
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'An unexpected error occurred while uploading the image.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        return null;
+    }
+}
+
+// Event listener for image input change
+document.getElementById('imgInput').addEventListener('change', async function(event) {
     const file = event.target.files[0];
     if (!file) {
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-        const response = await window.electronAPI.saveImage(file.name, event.target.result);
-        if (response.success) {
-            document.getElementById('imagePreview').src = response.path;
-        } else {
-            console.error('Failed to save the image:', response.message);
-        }
-    };
-    reader.readAsArrayBuffer(file);
+    // Upload the image to the server
+    const imageName = await uploadImage(file);
+
+    if (imageName) {
+        // Store the image name for later use
+        window.uploadedImageName = imageName;
+    }
 });
 
 // SweetAlert2 funkcije

@@ -5,7 +5,11 @@ const fs = require('fs');
 // const { path } = require('path');
 // const { toggleTheme } = require('./dom/dom.js');
 
-
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
 
 function createWindow() {
     console.log("Creating window...");
@@ -57,10 +61,29 @@ ipcMain.on('fetch-data', async (event, { tableName, columns, condition }) => {
     }
 });
 
+ipcMain.on('fetch-clients', async (event, { tableName, columns, condition }) => {
+    try {
+        const data = await fetchData(tableName, columns, condition);
+        event.reply('clients-fetched', data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+});
+
 ipcMain.on('insert-data', async (event, { tableName, data }) => {
     try {
         const result = await insertData(tableName, data);
         event.reply('data-inserted', result);
+    } catch (error) {
+        console.error('Error inserting data:', error);
+        event.reply('insert-error', error.message);
+    }
+});
+
+ipcMain.on('insert-client', async (event, { tableName, data }) => {
+    try {
+        const result = await insertData(tableName, data);
+        event.reply('client-inserted', result);
     } catch (error) {
         console.error('Error inserting data:', error);
         event.reply('insert-error', error.message);
