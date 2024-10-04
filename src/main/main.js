@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { join } = require('path');
-const { fetchData, insertData } = require('./db/database.js');
+const { fetchData, insertData, updateData } = require('./db/database.js');
 const fs = require('fs');
 // const { path } = require('path');
 // const { toggleTheme } = require('./dom/dom.js');
@@ -70,6 +70,15 @@ ipcMain.on('fetch-clients', async (event, { tableName, columns, condition }) => 
     }
 });
 
+ipcMain.on('fetch-user', async (event, { tableName, columns, condition }) => {
+    try {
+        const data = await fetchData(tableName, columns, condition);
+        event.reply('user-fetched', data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+});
+
 ipcMain.on('insert-data', async (event, { tableName, data }) => {
     try {
         const result = await insertData(tableName, data);
@@ -90,6 +99,16 @@ ipcMain.on('insert-client', async (event, { tableName, data }) => {
     }
 });
 
+ipcMain.on('update-user', async (event, { tableName, data, conditionString, conditionValues }) => {
+    try {
+        const result = await updateData(tableName, data, conditionString, conditionValues);
+        event.reply('user-updated', result);
+    } catch (error) {
+        console.error('Error updating user:', error);
+        event.reply('update-error', error.message);
+    }
+});
+
 ipcMain.handle('save-image', async (event, fileName, buffer) => {
     const savePath = join(__dirname, '../renderer/img/products', fileName);
     console.log(savePath);
@@ -101,3 +120,6 @@ ipcMain.handle('save-image', async (event, fileName, buffer) => {
         return { success: false, message: 'Failed to save image', error: err };
     }
 });
+
+//funkcije za rad aplikacije
+

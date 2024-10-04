@@ -23,6 +23,71 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+// Login forma
+document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevent default form submission behavior
+
+    const username = event.target.username.value;
+    const password = event.target.password.value;
+
+    // Validate input
+    if (!username || !password) {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Unesite korisničko ime i lozinku.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        return;
+    }
+
+    try {
+        // Send login request to the server
+        const response = await fetch('http://simaks/api/login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            console.log('Login successful:', result);
+            // Store the token and user data
+            window.authToken = result.token;
+            window.currentUser = result.user;
+
+            // Hide login form and show main content
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('flex');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('flex');
+
+            // Optionally, display user profile information
+            displayUserProfile(result.user);
+			saveLoggedUser(result.user);
+        } else {
+            console.error('Login failed:', result.message);
+            Swal.fire({
+                title: 'Greška',
+                text: 'Neuspešna prijava: ' + result.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        Swal.fire({
+            title: 'Greška',
+            text: 'Došlo je do greške prilikom prijave.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+    }
+});
+
 // Slanje zahteva za preuzimanje podataka o artiklima iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
 	window.electronAPI.fetchData('products');
@@ -309,6 +374,10 @@ document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
 			content.classList.add('hidden');
 		});
 		document.querySelector(`#content${index + 1}`).classList.remove('hidden');
+
+        if (`content${index + 1}` === 'content1') {
+            window.electronAPI.fetchUser('users');
+        }
 	});
 });
 
@@ -452,9 +521,31 @@ document.getElementById('imgInput').addEventListener('change', async function(ev
     }
 });
 
+
+// Handle the fetched user data
+// window.electronAPI.onUserFetched((data) => {
+
+// 	document.querySelector('input[name=userUsername]').value = '';
+// 	document.querySelector('input[name=userPassword]').value = '';
+// 	document.querySelector('input[name=userFirstName]').value = '';
+// 	document.querySelector('input[name=userLastName]').value = '';
+// 	document.querySelector('input[name=userEmail]').value = '';
+// 	document.querySelector('input[name=userPhone]').value = '';
+	
+//     data.forEach(user => {
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+// 		document.querySelector('input[name=userUsername]').value = user.username;
+//     });
+	
+// });
+
 // SweetAlert2 funkcije
 function showAlert() {
-    window.sweetAlert.fire({
+	window.sweetAlert.fire({
 		title: 'Da li ste sigurni?',
 		text: 'Nećete moći da povratite ovu fiktivnu datoteku!',
 		icon: 'warning',
@@ -476,4 +567,32 @@ function showToast() {
 		title: 'Obaveštenje',
 		text: 'Ovo je primer toast poruke'
 	});
+}
+
+// Funkcija za prikazivanje podataka o korisniku
+function displayUserProfile(user) {
+	// Reference to the profile container
+	const profileContainer = document.getElementById('content1');
+
+	document.querySelector('input[name=userUsername]').value = '';
+	document.querySelector('input[name=userPassword]').value = '';
+	document.querySelector('input[name=userFirstName]').value = '';
+	document.querySelector('input[name=userLastName]').value = '';
+	document.querySelector('input[name=userEmail]').value = '';
+	document.querySelector('input[name=userPhone]').value = '';
+
+	document.querySelector('input[name=userUsername]').value = user.username;
+	// document.querySelector('input[name=userPassword]').value = user.password;
+	document.querySelector('input[name=userFirstName]').value = user.first_name;
+	document.querySelector('input[name=userLastName]').value = user.last_name;
+	document.querySelector('input[name=userEmail]').value = user.email;
+	document.querySelector('input[name=userPhone]').value = user.phone;
+
+	// Make content1 visible
+	profileContainer.classList.remove('hidden');
+	profileContainer.classList.add('flex');
+}
+
+function saveLoggedUser(user) {
+	localStorage.setItem("user", JSON.stringify(user));
 }

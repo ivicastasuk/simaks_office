@@ -17,6 +17,55 @@ async function connect() {
         return connection;
     } catch (error) {
         console.error('Error connecting to the database:', error);
+        throw error;
+    }
+}
+
+// funkcija za azuriranje podataka u bazi
+async function updateData(tableName, data, conditionString, conditionValues) {
+    let connection;
+    try {
+        connection = await connect();
+
+        if (!tableName || typeof tableName !== 'string') {
+            throw new Error('Invalid table name');
+        }
+        if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+            throw new Error('Data must be a non-empty object');
+        }
+        if (!conditionString || typeof conditionString !== 'string') {
+            throw new Error('Condition string must be a non-empty string');
+        }
+        if (!Array.isArray(conditionValues)) {
+            throw new Error('Condition values must be an array');
+        }
+
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+
+        const setClause = keys.map(key => `?? = ?`).join(', ');
+
+        const queryValues = [];
+
+        queryValues.push(tableName);
+
+        keys.forEach((key, index) => {
+            queryValues.push(key, values[index]);
+        });
+
+        queryValues.push(...conditionValues);
+
+        const query = `UPDATE ?? SET ${setClause} WHERE ${conditionString}`;
+
+        const [result] = await connection.execute(query, queryValues);
+        return result;
+    } catch (error) {
+        console.error('Error updating data:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
     }
 }
 
@@ -74,4 +123,4 @@ async function insertData(tableName, data) {
 }
 
 // export default { connect, fetchData, insertData };
-module.exports = { connect, fetchData, insertData };
+module.exports = { connect, fetchData, insertData, updateData };
