@@ -384,6 +384,7 @@ document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
 // Zatvaranje prozora
 document.querySelectorAll('[role=closeWindow]').forEach(el => {
 	el.addEventListener('click', closeWindow);
+	localStorage.removeItem('user');
 });
 
 function closeWindow() {
