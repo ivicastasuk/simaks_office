@@ -27,6 +27,7 @@ async function updateData(tableName, data, conditionString, conditionValues) {
     try {
         connection = await connect();
 
+        // Validate input parameters
         if (!tableName || typeof tableName !== 'string') {
             throw new Error('Invalid table name');
         }
@@ -40,23 +41,19 @@ async function updateData(tableName, data, conditionString, conditionValues) {
             throw new Error('Condition values must be an array');
         }
 
+        // Prepare the SET clause
         const keys = Object.keys(data);
         const values = Object.values(data);
 
-        const setClause = keys.map(key => `?? = ?`).join(', ');
+        const setClause = keys.map(key => `\`${key}\` = ?`).join(', ');
 
-        const queryValues = [];
+        // Combine values for the query
+        const queryValues = [...values, ...conditionValues];
 
-        queryValues.push(tableName);
+        // Construct the SQL query
+        const query = `UPDATE \`${tableName}\` SET ${setClause} WHERE ${conditionString}`;
 
-        keys.forEach((key, index) => {
-            queryValues.push(key, values[index]);
-        });
-
-        queryValues.push(...conditionValues);
-
-        const query = `UPDATE ?? SET ${setClause} WHERE ${conditionString}`;
-
+        // Execute the query
         const [result] = await connection.execute(query, queryValues);
         return result;
     } catch (error) {
@@ -122,5 +119,29 @@ async function insertData(tableName, data) {
     }
 }
 
+async function fetchSettingsData(companyId) {
+    let connection;
+    try {
+        connection = await connect();
+        const query = 'SELECT * FROM settings WHERE company_id = ?';
+        const [rows] = await connection.execute(query, [companyId]);
+        if (rows.length > 0) {
+            const settingsRow = rows[0];
+            // Optionally remove company_id from the settings object
+            delete settingsRow.company_id;
+            return settingsRow;
+        } else {
+            return {}; // Return empty object if no settings found
+        }
+    } catch (error) {
+        console.error('Error fetching settings data:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
 // export default { connect, fetchData, insertData };
-module.exports = { connect, fetchData, insertData, updateData };
+module.exports = { connect, fetchData, insertData, updateData, fetchSettingsData };

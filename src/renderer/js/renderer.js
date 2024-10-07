@@ -1,5 +1,3 @@
-// console.log(window.electronAPI);
-// console.log(window.sweetAlert);
 // Promena teme
 document.getElementById('theme-toggle').addEventListener('click', function () {
 	const docEl = document.documentElement;
@@ -68,6 +66,8 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
             // Optionally, display user profile information
             displayUserProfile(result.user);
 			saveLoggedUser(result.user);
+			fetchSettingsData(result.user.company_id);
+			
         } else {
             console.error('Login failed:', result.message);
             Swal.fire({
@@ -86,6 +86,102 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
             confirmButtonText: 'OK',
         });
     }
+});
+
+// Event listener za snimanje podataka o korisniku
+document.getElementById('userUpdate').addEventListener('click', async () => {
+    let user = JSON.parse(localStorage.getItem('user'));
+	const userId = user.id;
+    const updatedData = {
+        username: document.querySelector("input[name='userUsername']").value,
+        email: document.querySelector("input[name='userEmail']").value,
+        first_name: document.querySelector("input[name='userFirstName']").value,
+        last_name: document.querySelector("input[name='userLastName']").value,
+        phone: document.querySelector("input[name='userPhone']").value,
+    };
+
+    // Validacija podataka
+    if (!updatedData.username || !updatedData.email || !updatedData.first_name || !updatedData.last_name || !updatedData.phone) {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Popunite sva obavezna polja...',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        return;
+    }
+
+    const tableName = 'users';
+    const conditionString = 'id = ?';
+    const conditionValues = [userId];
+
+    // Slanje zahteva za azuriranje
+    window.electronAPI.updateUser({ tableName, data: updatedData, conditionString, conditionValues });
+});
+
+window.electronAPI.onUserUpdated((result) => {
+    console.log('User updated successfully:', result);
+    Swal.fire({
+        title: 'Uspeh',
+        text: 'Korisnik je uspešno ažuriran!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+    });
+});
+
+// Event listener za snimanje podataka o firmi
+document.getElementById('companyUpdate').addEventListener('click', async () => {
+    let company = JSON.parse(localStorage.getItem('settings'));
+	const companyId = company.id;
+    const updatedData = {
+        company: document.querySelector("input[name='companyName']").value,
+        address: document.querySelector("input[name='companyAddres']").value,
+        city: document.querySelector("input[name='companyCity']").value,
+        pib: document.querySelector("input[name='companyPIB']").value,
+        mb: document.querySelector("input[name='companyMB']").value,
+        phone: document.querySelector("input[name='companyPhone']").value,
+        url: document.querySelector("input[name='companyUrl']").value,
+        logo: document.querySelector("input[name='companyLogo']").value,
+    };
+
+    // Validacija podataka
+    if (!updatedData.company || !updatedData.address || !updatedData.city || !updatedData.pib || !updatedData.mb || !updatedData.phone) {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Popunite sva obavezna polja...',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        return;
+    }
+
+    const tableName = 'settings';
+    const conditionString = 'id = ?';
+    const conditionValues = [companyId];
+
+    // Slanje zahteva za azuriranje
+    window.electronAPI.updateCompany({ tableName, data: updatedData, conditionString, conditionValues });
+});
+
+window.electronAPI.onCompanyUpdated((result) => {
+    console.log('Settings updated successfully:', result);
+    Swal.fire({
+        title: 'Uspeh',
+        text: 'Podešavanja su uspešno ažurirana!',
+        icon: 'success',
+        confirmButtonText: 'OK',
+    });
+});
+
+// Listen for the 'settings-fetched' event
+window.electronAPI.onSettingsFetched((settingsData) => {
+    // Save settings data to local storage
+    localStorage.setItem('settingsData', JSON.stringify(settingsData));
+
+	console.log("Company: ", JSON.stringify(settingsData));
+	
+
+    console.log('Settings data fetched and saved to local storage:', settingsData);
 });
 
 // Slanje zahteva za preuzimanje podataka o artiklima iz baze
@@ -522,28 +618,6 @@ document.getElementById('imgInput').addEventListener('change', async function(ev
     }
 });
 
-
-// Handle the fetched user data
-// window.electronAPI.onUserFetched((data) => {
-
-// 	document.querySelector('input[name=userUsername]').value = '';
-// 	document.querySelector('input[name=userPassword]').value = '';
-// 	document.querySelector('input[name=userFirstName]').value = '';
-// 	document.querySelector('input[name=userLastName]').value = '';
-// 	document.querySelector('input[name=userEmail]').value = '';
-// 	document.querySelector('input[name=userPhone]').value = '';
-	
-//     data.forEach(user => {
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-// 		document.querySelector('input[name=userUsername]').value = user.username;
-//     });
-	
-// });
-
 // SweetAlert2 funkcije
 function showAlert() {
 	window.sweetAlert.fire({
@@ -592,6 +666,34 @@ function displayUserProfile(user) {
 	// Make content1 visible
 	profileContainer.classList.remove('hidden');
 	profileContainer.classList.add('flex');
+}
+
+function fetchSettingsData(companyId) {
+    // Send an IPC message to fetch settings data
+    window.electronAPI.fetchSettingsData(companyId);
+}
+
+function displayCompanySettings(company){
+	document.querySelector('input[name=companyName]').value = '';
+	document.querySelector('input[name=companyAddress]').value = '';
+	document.querySelector('input[name=companyCity]').value = '';
+	document.querySelector('input[name=companyPIB]').value = '';
+	document.querySelector('input[name=companyMB]').value = '';
+	document.querySelector('input[name=companyPhone]').value = '';
+	document.querySelector('input[name=companyUrl]').value = '';
+	document.getElementById('companyLogo').src = 'http://simaks/img/logo.jpg';
+	
+	document.querySelector('input[name=companyName]').value = company.name;
+	document.querySelector('input[name=companyAddress]').value = company.address;
+	document.querySelector('input[name=companyCity]').value = company.city;
+	document.querySelector('input[name=companyPIB]').value = company.pib;
+	document.querySelector('input[name=companyMB]').value = company.mb;
+	document.querySelector('input[name=companyPhone]').value = company.phone;
+	document.querySelector('input[name=companyUrl]').value = company.url;
+}
+
+function saveCompanySettings(company){
+	localStorage.setItem("company", JSON.stringify(company));
 }
 
 function saveLoggedUser(user) {

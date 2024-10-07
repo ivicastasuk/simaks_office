@@ -2,8 +2,6 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { join } = require('path');
 const { fetchData, insertData, updateData } = require('./db/database.js');
 const fs = require('fs');
-// const { path } = require('path');
-// const { toggleTheme } = require('./dom/dom.js');
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -105,7 +103,24 @@ ipcMain.on('update-user', async (event, { tableName, data, conditionString, cond
         event.reply('user-updated', result);
     } catch (error) {
         console.error('Error updating user:', error);
-        event.reply('update-error', error.message);
+    }
+});
+
+ipcMain.on('update-company', async (event, { tableName, data, conditionString, conditionValues }) => {
+    try {
+        const result = await updateData(tableName, data, conditionString, conditionValues);
+        event.reply('company-updated', result);
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+});
+
+ipcMain.on('fetch-settings-data', async (event, companyId) => {
+    try {
+        const settingsData = await fetchSettingsData(companyId);
+        event.reply('settings-fetched', settingsData);
+    } catch (error) {
+        console.error('Error fetching settings data:', error);
     }
 });
 
@@ -120,6 +135,3 @@ ipcMain.handle('save-image', async (event, fileName, buffer) => {
         return { success: false, message: 'Failed to save image', error: err };
     }
 });
-
-//funkcije za rad aplikacije
-

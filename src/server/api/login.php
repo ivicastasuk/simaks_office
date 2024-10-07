@@ -43,7 +43,7 @@ if (!$conn->set_charset("utf8mb4")) {
 }
 
 // Prepare and execute SQL statement
-$stmt = $conn->prepare("SELECT id, username, password, first_name, last_name, email, phone FROM users WHERE username = ?");
+$stmt = $conn->prepare("SELECT id, username, password, first_name, last_name, email, phone, company_id FROM users WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -80,6 +80,7 @@ if (password_verify($password, $user['password'])) {
             'last_name' => $user['last_name'],
             'email' => $user['email'],
             'phone' => $user['phone'],
+            'company_id' => $user['company_id'],
         ],
     ], JSON_UNESCAPED_UNICODE);
 } else {
