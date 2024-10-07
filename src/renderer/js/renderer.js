@@ -23,165 +23,173 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Login forma
 document.getElementById('loginForm').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
+	event.preventDefault(); // Prevent default form submission behavior
 
-    const username = event.target.username.value;
-    const password = event.target.password.value;
+	const username = event.target.username.value;
+	const password = event.target.password.value;
 
-    // Validate input
-    if (!username || !password) {
-        Swal.fire({
-            title: 'Greška',
-            text: 'Unesite korisničko ime i lozinku.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-        return;
-    }
+	// Validate input
+	if (!username || !password) {
+		Swal.fire({
+			title: 'Greška',
+			text: 'Unesite korisničko ime i lozinku.',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+		return;
+	}
 
-    try {
-        // Send login request to the server
-        const response = await fetch('http://simaks/api/login.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
+	try {
+		// Send login request to the server
+		const response = await fetch('http://simaks/api/login.php', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ username, password }),
+		});
 
-        const result = await response.json();
+		const result = await response.json();
 
-        if (response.ok && result.success) {
-            console.log('Login successful:', result);
-            // Store the token and user data
-            window.authToken = result.token;
-            window.currentUser = result.user;
+		if (response.ok && result.success) {
+			// console.log('Login successful:', result);
+			// Store the token and user data
+			window.authToken = result.token;
+			window.currentUser = result.user;
 
-            // Hide login form and show main content
-            document.getElementById('login-container').classList.add('hidden');
-            document.getElementById('login-container').classList.remove('flex');
-            document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('main-content').classList.add('flex');
+			// Hide login form and show main content
+			document.getElementById('login-container').classList.add('hidden');
+			document.getElementById('login-container').classList.remove('flex');
+			document.getElementById('main-content').classList.remove('hidden');
+			document.getElementById('main-content').classList.add('flex');
 
-            // Optionally, display user profile information
-            displayUserProfile(result.user);
+			// Optionally, display user profile information
+			displayUserProfile(result.user);
 			saveLoggedUser(result.user);
-			fetchSettingsData(result.user.company_id);
-			
-        } else {
-            console.error('Login failed:', result.message);
-            Swal.fire({
-                title: 'Greška',
-                text: 'Neuspešna prijava: ' + result.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-            });
-        }
-    } catch (error) {
-        console.error('Error during login:', error);
-        Swal.fire({
-            title: 'Greška',
-            text: 'Došlo je do greške prilikom prijave.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-    }
+
+			// Pozivanje funkcije za iscitavanja podesavanja
+			fetchAndSaveSettings(result.user.company_id).then(() => {
+				displayCompanySettings();
+			});
+
+		} else {
+			console.error('Login failed:', result.message);
+			Swal.fire({
+				title: 'Greška',
+				text: 'Neuspešna prijava: ' + result.message,
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+		}
+	} catch (error) {
+		console.error('Error during login:', error);
+		Swal.fire({
+			title: 'Greška',
+			text: 'Došlo je do greške prilikom prijave.',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+	}
 });
 
 // Event listener za snimanje podataka o korisniku
 document.getElementById('userUpdate').addEventListener('click', async () => {
-    let user = JSON.parse(localStorage.getItem('user'));
+	let user = JSON.parse(localStorage.getItem('user'));
 	const userId = user.id;
-    const updatedData = {
-        username: document.querySelector("input[name='userUsername']").value,
-        email: document.querySelector("input[name='userEmail']").value,
-        first_name: document.querySelector("input[name='userFirstName']").value,
-        last_name: document.querySelector("input[name='userLastName']").value,
-        phone: document.querySelector("input[name='userPhone']").value,
-    };
+	const updatedData = {
+		username: document.querySelector("input[name='userUsername']").value,
+		email: document.querySelector("input[name='userEmail']").value,
+		first_name: document.querySelector("input[name='userFirstName']").value,
+		last_name: document.querySelector("input[name='userLastName']").value,
+		phone: document.querySelector("input[name='userPhone']").value,
+	};
 
-    // Validacija podataka
-    if (!updatedData.username || !updatedData.email || !updatedData.first_name || !updatedData.last_name || !updatedData.phone) {
-        Swal.fire({
-            title: 'Greška',
-            text: 'Popunite sva obavezna polja...',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-        return;
-    }
+	// Validacija podataka
+	if (!updatedData.username || !updatedData.email || !updatedData.first_name || !updatedData.last_name || !updatedData.phone) {
+		Swal.fire({
+			title: 'Greška',
+			text: 'Popunite sva obavezna polja...',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+		return;
+	}
 
-    const tableName = 'users';
-    const conditionString = 'id = ?';
-    const conditionValues = [userId];
+	const tableName = 'users';
+	const conditionString = 'id = ?';
+	const conditionValues = [ userId ];
 
-    // Slanje zahteva za azuriranje
-    window.electronAPI.updateUser({ tableName, data: updatedData, conditionString, conditionValues });
+	// Slanje zahteva za azuriranje
+	window.electronAPI.updateUser({ tableName, data: updatedData, conditionString, conditionValues });
 });
 
 window.electronAPI.onUserUpdated((result) => {
-    console.log('User updated successfully:', result);
-    Swal.fire({
-        title: 'Uspeh',
-        text: 'Korisnik je uspešno ažuriran!',
-        icon: 'success',
-        confirmButtonText: 'OK',
-    });
+	console.log('User updated successfully:', result);
+	Swal.fire({
+		title: 'Uspeh',
+		text: 'Korisnik je uspešno ažuriran!',
+		icon: 'success',
+		confirmButtonText: 'OK',
+	});
 });
 
 // Event listener za snimanje podataka o firmi
 document.getElementById('companyUpdate').addEventListener('click', async () => {
-    let company = JSON.parse(localStorage.getItem('settings'));
+	// Preuzimanje podataka iz input polja za kompaniju
+	let company = JSON.parse(localStorage.getItem('settings'));
 	const companyId = company.id;
-    const updatedData = {
-        company: document.querySelector("input[name='companyName']").value,
-        address: document.querySelector("input[name='companyAddres']").value,
-        city: document.querySelector("input[name='companyCity']").value,
-        pib: document.querySelector("input[name='companyPIB']").value,
-        mb: document.querySelector("input[name='companyMB']").value,
-        phone: document.querySelector("input[name='companyPhone']").value,
-        url: document.querySelector("input[name='companyUrl']").value,
-        logo: document.querySelector("input[name='companyLogo']").value,
-    };
+	const updatedData = {
+		company: document.querySelector("input[name='companyName']").value,
+		address: document.querySelector("input[name='companyAddress']").value,
+		city: document.querySelector("input[name='companyCity']").value,
+		pib: document.querySelector("input[name='companyPIB']").value,
+		mb: document.querySelector("input[name='companyMB']").value,
+		phone: document.querySelector("input[name='companyPhone']").value,
+		website: document.querySelector("input[name='companyUrl']").value,
+		// logo: document.querySelector("input[name='companyLogo']").value,
+	};
 
-    // Validacija podataka
-    if (!updatedData.company || !updatedData.address || !updatedData.city || !updatedData.pib || !updatedData.mb || !updatedData.phone) {
-        Swal.fire({
-            title: 'Greška',
-            text: 'Popunite sva obavezna polja...',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-        return;
-    }
+	// Validacija podataka
+	if (!updatedData.company || !updatedData.address || !updatedData.city || !updatedData.pib || !updatedData.mb || !updatedData.phone) {
+		Swal.fire({
+			title: 'Greška',
+			text: 'Popunite sva obavezna polja...',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+		return;
+	}
 
-    const tableName = 'settings';
-    const conditionString = 'id = ?';
-    const conditionValues = [companyId];
+	const tableName = 'settings';
+	const conditionString = 'id = ?';
+	const conditionValues = [ companyId ];
 
-    // Slanje zahteva za azuriranje
-    window.electronAPI.updateCompany({ tableName, data: updatedData, conditionString, conditionValues });
+	// Slanje zahteva za azuriranje
+	window.electronAPI.updateCompany({ tableName, data: updatedData, conditionString, conditionValues });
 });
 
 window.electronAPI.onCompanyUpdated((result) => {
-    console.log('Settings updated successfully:', result);
-    Swal.fire({
-        title: 'Uspeh',
-        text: 'Podešavanja su uspešno ažurirana!',
-        icon: 'success',
-        confirmButtonText: 'OK',
-    });
+	console.log('Company updated successfully:', result);
+	Swal.fire({
+		title: 'Uspeh',
+		text: 'Podešavanja su uspešno ažurirana!',
+		icon: 'success',
+		confirmButtonText: 'OK',
+	});
 });
 
 // Listen for the 'settings-fetched' event
 window.electronAPI.onSettingsFetched((settingsData) => {
-    // Save settings data to local storage
-    localStorage.setItem('settingsData', JSON.stringify(settingsData));
+	console.log("Data: ", JSON.stringify(settingsData));
 
-	console.log("Company: ", JSON.stringify(settingsData));
-	
-
-    console.log('Settings data fetched and saved to local storage:', settingsData);
+	if (settingsData.length > 0) {
+		// Pretpostavljamo da postoji samo jedan red sa podešavanjima za svaku kompaniju
+		const settings = settingsData[ 0 ];
+		localStorage.setItem('settings', JSON.stringify(settings));
+		console.log('Settings data saved to local storage:', settings);
+	} else {
+		console.warn('No settings found for this company.');
+	}
 });
 
 // Slanje zahteva za preuzimanje podataka o artiklima iz baze
@@ -369,7 +377,7 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 		const unit = document.querySelector("select[name=units]").value;
 		const price = document.querySelector("input[name=price]").value;
 
-		if(!code || !name || !model){
+		if (!code || !name || !model) {
 			Swal.fire({
 				title: 'Greška',
 				text: 'Popunite sva obavezna polja...',
@@ -422,7 +430,7 @@ document.querySelectorAll('button[name=insertClient]').forEach((button, index) =
 		const clientPIB = document.querySelector("input[name=clientPIB]").value;
 		const clientMB = document.querySelector("input[name=clientMB]").value;
 
-		if(!clientName){
+		if (!clientName) {
 			Swal.fire({
 				title: 'Greška',
 				text: 'Popunite sva obavezna polja...',
@@ -471,9 +479,9 @@ document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
 		});
 		document.querySelector(`#content${index + 1}`).classList.remove('hidden');
 
-        if (`content${index + 1}` === 'content1') {
-            window.electronAPI.fetchUser('users');
-        }
+		if (`content${index + 1}` === 'content1') {
+			window.electronAPI.fetchUser('users');
+		}
 	});
 });
 
@@ -481,6 +489,7 @@ document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
 document.querySelectorAll('[role=closeWindow]').forEach(el => {
 	el.addEventListener('click', closeWindow);
 	localStorage.removeItem('user');
+	localStorage.removeItem('settings');
 });
 
 function closeWindow() {
@@ -538,24 +547,24 @@ function toggleMaximize() {
 document.getElementById("imageContainer").addEventListener("click", openFileDialog);
 // document.getElementById("imgInput").addEventListener("change", previewImage);
 
-function openFileDialog(){
+function openFileDialog() {
 	document.getElementById("imgInput").click();
 }
 
 function previewImage() {
-	const file = document.getElementById('imgInput').files[0];
-		if (!file) {
+	const file = document.getElementById('imgInput').files[ 0 ];
+	if (!file) {
 		console.log('Nijedan fajl nije izabran.');
 		return;
 	}
 
 	const reader = new FileReader();
 
-	reader.onload = function(e) {
+	reader.onload = function (e) {
 		document.getElementById('imageContainer').style.backgroundImage = `url(${e.target.result})`;
 	};
 
-	reader.onerror = function(e) {
+	reader.onerror = function (e) {
 		console.error('Došlo je do greške pri čitanju fajla:', e);
 	};
 
@@ -564,58 +573,58 @@ function previewImage() {
 
 // Function to handle image upload
 async function uploadImage(file) {
-    const formData = new FormData();
-    formData.append('image', file);
+	const formData = new FormData();
+	formData.append('image', file);
 
-    try {
-        const response = await fetch('http://simaks/api/upload-image.php', {
-            method: 'POST',
-            body: formData,
-        });
+	try {
+		const response = await fetch('http://simaks/api/upload-image.php', {
+			method: 'POST',
+			body: formData,
+		});
 
-        const result = await response.json();
+		const result = await response.json();
 
-        if (response.ok && result.success) {
-            console.log('Image uploaded successfully:', result);
-            // Update the image preview
-            document.getElementById('imagePreview').src = URL.createObjectURL(file);
-            return result.filename; // Return the image file name from the server response
-        } else {
-            console.error('Error uploading image:', result.message);
-            Swal.fire({
-                title: 'Error',
-                text: 'Failed to upload image: ' + result.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-            });
-            return null;
-        }
-    } catch (error) {
-        console.error('Error uploading image:', error);
-        Swal.fire({
-            title: 'Error',
-            text: 'An unexpected error occurred while uploading the image.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-        return null;
-    }
+		if (response.ok && result.success) {
+			console.log('Image uploaded successfully:', result);
+			// Update the image preview
+			document.getElementById('imagePreview').src = URL.createObjectURL(file);
+			return result.filename; // Return the image file name from the server response
+		} else {
+			console.error('Error uploading image:', result.message);
+			Swal.fire({
+				title: 'Error',
+				text: 'Failed to upload image: ' + result.message,
+				icon: 'error',
+				confirmButtonText: 'OK',
+			});
+			return null;
+		}
+	} catch (error) {
+		console.error('Error uploading image:', error);
+		Swal.fire({
+			title: 'Error',
+			text: 'An unexpected error occurred while uploading the image.',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+		return null;
+	}
 }
 
 // Event listener for image input change
-document.getElementById('imgInput').addEventListener('change', async function(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        return;
-    }
+document.getElementById('imgInput').addEventListener('change', async function (event) {
+	const file = event.target.files[ 0 ];
+	if (!file) {
+		return;
+	}
 
-    // Upload the image to the server
-    const imageName = await uploadImage(file);
+	// Upload the image to the server
+	const imageName = await uploadImage(file);
 
-    if (imageName) {
-        // Store the image name for later use
-        window.uploadedImageName = imageName;
-    }
+	if (imageName) {
+		// Store the image name for later use
+		window.uploadedImageName = imageName;
+	}
 });
 
 // SweetAlert2 funkcije
@@ -626,15 +635,15 @@ function showAlert() {
 		icon: 'warning',
 		showCancelButton: true,
 		confirmButtonText: 'Da, obriši je!'
-    }).then((result) => {
+	}).then((result) => {
 		if (result.isConfirmed) {
 			window.sweetAlert.fire({
-			title: 'Obrisano!',
-			text: 'Vaša fiktivna datoteka je obrisana.',
-			icon: 'success'
+				title: 'Obrisano!',
+				text: 'Vaša fiktivna datoteka je obrisana.',
+				icon: 'success'
 			});
 		}
-    });
+	});
 }
 
 function showToast() {
@@ -668,12 +677,28 @@ function displayUserProfile(user) {
 	profileContainer.classList.add('flex');
 }
 
-function fetchSettingsData(companyId) {
-    // Send an IPC message to fetch settings data
-    window.electronAPI.fetchSettingsData(companyId);
+function fetchAndSaveSettings(companyId) {
+	return new Promise((resolve, reject) => {
+		// Slanje zahteva Electron back-endu
+		window.electronAPI.fetchSettings(companyId);
+
+		// Slušamo događaj kada su podešavanja uspešno dohvaćena
+		window.electronAPI.onSettingsFetched((settingsData) => {
+			if (settingsData.length > 0) {
+				// Pretpostavljamo da postoji samo jedan red sa podešavanjima za svaku kompaniju
+				const settings = settingsData[ 0 ];
+				localStorage.setItem('settings', JSON.stringify(settings));
+				console.log('Settings data saved to local storage:', settings);
+				resolve(); // Signaliziramo da su podaci uspešno sačuvani
+			} else {
+				console.warn('No settings found for this company.');
+				reject(new Error('No settings found.'));
+			}
+		});
+	});
 }
 
-function displayCompanySettings(company){
+async function displayCompanySettings() {
 	document.querySelector('input[name=companyName]').value = '';
 	document.querySelector('input[name=companyAddress]').value = '';
 	document.querySelector('input[name=companyCity]').value = '';
@@ -682,18 +707,16 @@ function displayCompanySettings(company){
 	document.querySelector('input[name=companyPhone]').value = '';
 	document.querySelector('input[name=companyUrl]').value = '';
 	document.getElementById('companyLogo').src = 'http://simaks/img/logo.jpg';
-	
-	document.querySelector('input[name=companyName]').value = company.name;
-	document.querySelector('input[name=companyAddress]').value = company.address;
-	document.querySelector('input[name=companyCity]').value = company.city;
-	document.querySelector('input[name=companyPIB]').value = company.pib;
-	document.querySelector('input[name=companyMB]').value = company.mb;
-	document.querySelector('input[name=companyPhone]').value = company.phone;
-	document.querySelector('input[name=companyUrl]').value = company.url;
-}
 
-function saveCompanySettings(company){
-	localStorage.setItem("company", JSON.stringify(company));
+	const settings = JSON.parse(localStorage.getItem("settings"));
+
+	document.querySelector('input[name=companyName]').value = settings.company;
+	document.querySelector('input[name=companyAddress]').value = settings.address;
+	document.querySelector('input[name=companyCity]').value = settings.city;
+	document.querySelector('input[name=companyPIB]').value = settings.pib;
+	document.querySelector('input[name=companyMB]').value = settings.mb;
+	document.querySelector('input[name=companyPhone]').value = settings.phone;
+	document.querySelector('input[name=companyUrl]').value = settings.website;
 }
 
 function saveLoggedUser(user) {

@@ -11,7 +11,7 @@ app.on('window-all-closed', () => {
 
 function createWindow() {
     console.log("Creating window...");
-    
+
     const mainWindow = new BrowserWindow({
         minWidth: 1024,
         width: 1024,
@@ -26,13 +26,13 @@ function createWindow() {
             nodeIntegration: false,
             webSecurity: true
         }
-    }); 
-    
+    });
+
     mainWindow.loadFile('./src/renderer/index.html');
     mainWindow.setMenu(null);
     mainWindow.webContents.openDevTools();
     mainWindow.maximize();
-    
+
     ipcMain.on('close-window', () => {
         mainWindow.close();
     });
@@ -45,7 +45,7 @@ function createWindow() {
     ipcMain.on('unmaximize-window', () => {
         mainWindow.unmaximize();
     });
-    
+
 }
 
 app.whenReady().then(createWindow);
@@ -111,16 +111,18 @@ ipcMain.on('update-company', async (event, { tableName, data, conditionString, c
         const result = await updateData(tableName, data, conditionString, conditionValues);
         event.reply('company-updated', result);
     } catch (error) {
-        console.error('Error updating settings:', error);
+        console.error('Error updating company data:', error);
     }
 });
 
-ipcMain.on('fetch-settings-data', async (event, companyId) => {
+ipcMain.on('fetch-settings', async (event, companyId) => {
     try {
-        const settingsData = await fetchSettingsData(companyId);
-        event.reply('settings-fetched', settingsData);
+        // Korišćenje fetchData funkcije za dohvaćanje podataka iz tabele settings gde je company_id odgovarajući
+        const condition = `WHERE id = ${companyId}`;
+        const data = await fetchData('settings', '*', condition);
+        event.reply('settings-fetched', data);
     } catch (error) {
-        console.error('Error fetching settings data:', error);
+        console.error('Error fetching settings:', error);
     }
 });
 

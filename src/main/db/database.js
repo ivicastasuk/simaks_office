@@ -48,13 +48,13 @@ async function updateData(tableName, data, conditionString, conditionValues) {
         const setClause = keys.map(key => `\`${key}\` = ?`).join(', ');
 
         // Combine values for the query
-        const queryValues = [...values, ...conditionValues];
+        const queryValues = [ ...values, ...conditionValues ];
 
         // Construct the SQL query
         const query = `UPDATE \`${tableName}\` SET ${setClause} WHERE ${conditionString}`;
 
         // Execute the query
-        const [result] = await connection.execute(query, queryValues);
+        const [ result ] = await connection.execute(query, queryValues);
         return result;
     } catch (error) {
         console.error('Error updating data:', error);
@@ -77,7 +77,7 @@ async function fetchData(tableName, columns = '*', condition = '') {
         // Formiranje SQL upita na osnovu unetih parametara
         const query = `SELECT ${columns} FROM ${tableName} ${condition}`;
         connection = await connect();
-        const [rows] = await connection.query(query);
+        const [ rows ] = await connection.query(query);
         return rows;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -119,29 +119,5 @@ async function insertData(tableName, data) {
     }
 }
 
-async function fetchSettingsData(companyId) {
-    let connection;
-    try {
-        connection = await connect();
-        const query = 'SELECT * FROM settings WHERE company_id = ?';
-        const [rows] = await connection.execute(query, [companyId]);
-        if (rows.length > 0) {
-            const settingsRow = rows[0];
-            // Optionally remove company_id from the settings object
-            delete settingsRow.company_id;
-            return settingsRow;
-        } else {
-            return {}; // Return empty object if no settings found
-        }
-    } catch (error) {
-        console.error('Error fetching settings data:', error);
-        throw error;
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
-    }
-}
-
 // export default { connect, fetchData, insertData };
-module.exports = { connect, fetchData, insertData, updateData, fetchSettingsData };
+module.exports = { connect, fetchData, insertData, updateData };
