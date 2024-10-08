@@ -12,12 +12,15 @@ const path = require('path');
         const htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
         // Postavi sadrzaj stranice
-        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        await page.setContent(htmlContent, {
+            waitUntil: 'networkidle0'
+        });
 
         // Generisi PDF
         await page.pdf({
             path: './src/server/templates/ponuda.pdf',
-            format: 'A4'
+            format: 'A4',
+            printBackground: true
         });
 
         await browser.close();
