@@ -12,11 +12,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@ilovepdf/ilovepdf-nodejs": "^0.3.0",
     "daisyui": "^4.10.2",
     "electron": "^31.3.1"
   },
   "dependencies": {
     "mysql2": "^3.9.7",
+    "puppeteer": "^23.5.1",
     "tailwindcss": "^3.4.3"
   }
 }

@@ -180,13 +180,10 @@ window.electronAPI.onCompanyUpdated((result) => {
 
 // Listen for the 'settings-fetched' event
 window.electronAPI.onSettingsFetched((settingsData) => {
-	console.log("Data: ", JSON.stringify(settingsData));
-
 	if (settingsData.length > 0) {
 		// Pretpostavljamo da postoji samo jedan red sa podešavanjima za svaku kompaniju
 		const settings = settingsData[ 0 ];
 		localStorage.setItem('settings', JSON.stringify(settings));
-		console.log('Settings data saved to local storage:', settings);
 	} else {
 		console.warn('No settings found for this company.');
 	}
@@ -688,7 +685,6 @@ function fetchAndSaveSettings(companyId) {
 				// Pretpostavljamo da postoji samo jedan red sa podešavanjima za svaku kompaniju
 				const settings = settingsData[ 0 ];
 				localStorage.setItem('settings', JSON.stringify(settings));
-				console.log('Settings data saved to local storage:', settings);
 				resolve(); // Signaliziramo da su podaci uspešno sačuvani
 			} else {
 				console.warn('No settings found for this company.');
