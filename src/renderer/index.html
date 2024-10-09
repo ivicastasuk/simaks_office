@@ -324,10 +324,11 @@
 					<div id="pagePreview" class="w-1/2 h-view p-4 overflow-auto flex justify-center items-start"></div>
 					<div class="w-1/2 h-view p-4 flex flex-col justify-start items-start gap-4">
 						<div class="w-full flex flex-col justify-start items-start gap-4">
-							<div>
-								<input type="text" id="searchInput" placeholder="Pretraži kod ili model" autocomplete="off">
-								<div id="dropdownList" class="dropdown-content"></div>
-								<div id="searchResult"></div>
+							<div class="relative w-full">
+								<input type="text" name="searchInput" id="searchInput" autocomplete="off" class="input-search">
+								<label for="searchInput">Pretraži bazu artikala...</label>
+								<div id="dropdownList" class="dropdown-box absolute top-8 left-2 p-2 border border-solid border-"></div>
+								<table id="searchResult" class="w-full"></table>
 							</div>
 						</div>
 					</div>

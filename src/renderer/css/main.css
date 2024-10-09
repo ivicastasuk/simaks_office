@@ -796,12 +796,6 @@ html {
   }
 }
 
-.avatar.placeholder > div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 @media (hover:hover) {
   .label a:hover {
     --tw-text-opacity: 1;
@@ -982,46 +976,6 @@ html {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
   transition-duration: 200ms;
-}
-
-.dropdown-end .dropdown-content {
-  inset-inline-end: 0px;
-}
-
-.dropdown-left .dropdown-content {
-  bottom: auto;
-  inset-inline-end: 100%;
-  top: 0px;
-  transform-origin: right;
-}
-
-.dropdown-right .dropdown-content {
-  bottom: auto;
-  inset-inline-start: 100%;
-  top: 0px;
-  transform-origin: left;
-}
-
-.dropdown-bottom .dropdown-content {
-  bottom: auto;
-  top: 100%;
-  transform-origin: top;
-}
-
-.dropdown-top .dropdown-content {
-  bottom: 100%;
-  top: auto;
-  transform-origin: bottom;
-}
-
-.dropdown-end.dropdown-right .dropdown-content {
-  bottom: 0px;
-  top: auto;
-}
-
-.dropdown-end.dropdown-left .dropdown-content {
-  bottom: 0px;
-  top: auto;
 }
 
 .dropdown.dropdown-open .dropdown-content,
@@ -2379,12 +2333,96 @@ details.collapse summary::-webkit-details-marker {
   text-align: right;
 }
 
+.input-search {
+  border-radius: 0.25rem;
+  border-width: 1px;
+  background-color: transparent;
+  padding: 0.25rem;
+}
+
+[data-theme='emerald'] .input-search {
+  --tw-border-opacity: 1;
+  border-color: rgb(203 213 225 / var(--tw-border-opacity));
+}
+
+[data-theme='dark'] .input-search {
+  --tw-border-opacity: 1;
+  border-color: rgb(51 65 85 / var(--tw-border-opacity));
+}
+
+.dropdown-box {
+  position: absolute;
+  top: 2rem;
+  left: 0.5rem;
+  display: none;
+  border-radius: 0.25rem;
+  border-width: 1px;
+  border-style: solid;
+  padding: 0.5rem;
+}
+
+[data-theme='emerald'] .dropdown-box {
+  --tw-border-opacity: 1;
+  border-color: rgb(203 213 225 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(253 255 252 / var(--tw-bg-opacity));
+}
+
+[data-theme='dark'] .dropdown-box {
+  --tw-border-opacity: 1;
+  border-color: rgb(71 85 105 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 32 48 / var(--tw-bg-opacity));
+}
+
+[data-theme='emerald'] .dropdown-box .dropdown-item {
+  --tw-text-opacity: 1;
+  color: rgb(74 187 107 / var(--tw-text-opacity));
+}
+
+[data-theme='dark'] .dropdown-box .dropdown-item {
+  --tw-text-opacity: 1;
+  color: rgb(253 255 252 / var(--tw-text-opacity));
+}
+
+[data-theme='emerald'] .dropdown-box .dropdown-item.highlight {
+  cursor: pointer;
+  --tw-bg-opacity: 1;
+  background-color: rgb(74 187 107 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(253 255 252 / var(--tw-text-opacity));
+}
+
+[data-theme='dark'] .dropdown-box .dropdown-item.highlight {
+  cursor: pointer;
+  --tw-bg-opacity: 1;
+  background-color: rgb(74 187 107 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(253 255 252 / var(--tw-text-opacity));
+}
+
 .visible {
   visibility: visible;
 }
 
 .collapse {
   visibility: collapse;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.left-2 {
+  left: 0.5rem;
+}
+
+.top-8 {
+  top: 2rem;
 }
 
 .my-4 {
@@ -2492,10 +2530,6 @@ details.collapse summary::-webkit-details-marker {
   border-collapse: collapse;
 }
 
-.transform {
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .cursor-pointer {
   cursor: pointer;
 }
@@ -2574,6 +2608,10 @@ details.collapse summary::-webkit-details-marker {
   border-width: 1px;
 }
 
+.border-solid {
+  border-style: solid;
+}
+
 .bg-slate-300 {
   --tw-bg-opacity: 1;
   background-color: rgb(203 213 225 / var(--tw-bg-opacity));
@@ -2642,6 +2680,11 @@ details.collapse summary::-webkit-details-marker {
 
 .outline {
   outline-style: solid;
+}
+
+.blur {
+  --tw-blur: blur(8px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 #titlebar {

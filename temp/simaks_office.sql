@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Oct 07, 2024 at 07:45 PM
+-- Generation Time: Oct 09, 2024 at 09:06 PM
 -- Server version: 11.1.2-MariaDB
 -- PHP Version: 8.2.12
 
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   `description` varchar(512) DEFAULT NULL,
   `items` varchar(2048) DEFAULT NULL,
   `unit` varchar(8) NOT NULL DEFAULT 'kom',
-  `price` int(11) NOT NULL DEFAULT 0,
+  `price` double NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `NAME` (`name`) USING BTREE,
   KEY `MODEL` (`model`),
@@ -121,7 +121,7 @@ INSERT INTO `products` (`id`, `code`, `type`, `manufacturer`, `name`, `model`, `
 (7, '0007', 'P', 'Simaks DOO', 'Auto punjac', 'SMKS-02', 'is.png', 'Auto punjac', NULL, 'kom', 890),
 (9, '0008', 'P', 'Daikin', 'Spoljasnja jedinica', 'RXC35D', 'nest-energy-t.png', 'Spoljasnja jedinica za klima uredjaj 12000BTU', NULL, 'kom', 600),
 (10, '0009', 'P', 'Daikin', 'Spoljasnja jedinica', 'RXC50D', 'nest-energy-t.png', 'Spoljasnja jedinica za klima uredja BTU18000', NULL, 'kom', 950),
-(11, '0010', 'P', 'TommaTech', 'Solarni panel 455Wp', 'HC455W', '66fe520f1dd4d.png', 'Solarni panel snage 455W', NULL, 'kom', 110),
+(11, '0010', 'P', 'TommaTech', 'Solarni panel 455Wp', 'HC455W', '66fe520f1dd4d.png', 'Solarni panel snage 455W', NULL, 'kom', 110.45),
 (12, '0011', 'P', 'Daikin', 'Racva', 'KHRQ22M64T8', 'dummy.jpg', 'Racva', NULL, 'kom', 50);
 
 -- --------------------------------------------------------
@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `phone`, `is_logged`, `company_id`, `token`) VALUES
-(1, 'ivica', '$2y$10$zpr2JP9EKWKH6mMX7MK0y.mBGpsHPiQyI2KVw2my0cg1n4QO8ITlO', 'Ivica', 'Stašuk', 'stasuk.ivica@gmail.com', '+381-69-718229', 1, 1, '311479fe46c60fc5377c00c692331cce');
+(1, 'ivica', '$2y$10$zpr2JP9EKWKH6mMX7MK0y.mBGpsHPiQyI2KVw2my0cg1n4QO8ITlO', 'Ivica', 'Stašuk', 'stasuk.ivica@gmail.com', '+381-69-718229', 1, 1, 'be311665c301c943e0b5710db1a8ec00');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

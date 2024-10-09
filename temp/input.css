@@ -17,6 +17,47 @@
     .input-standard {
         @apply border-b px-2 py-1 text-right bg-transparent;
     }
+
+    .input-search {
+        @apply border p-1 bg-transparent rounded;
+    }
+
+    [data-theme='emerald'] .input-search {
+        @apply border-slate-300;
+    }
+
+    [data-theme='dark'] .input-search {
+        @apply border-slate-700;
+    }
+
+    .dropdown-box {
+        @apply absolute top-8 left-2 p-2 border border-solid rounded hidden;
+    }
+
+    [data-theme='emerald'] .dropdown-box {
+        @apply bg-light border-slate-300;
+    }
+
+    [data-theme='dark'] .dropdown-box {
+        @apply bg-dark border-slate-600;
+    }
+
+    [data-theme='emerald'] .dropdown-box .dropdown-item {
+        @apply text-primary;
+    }
+
+    [data-theme='dark'] .dropdown-box .dropdown-item {
+        @apply text-light;
+    }
+
+    [data-theme='emerald'] .dropdown-box .dropdown-item.highlight {
+        @apply bg-primary text-light cursor-pointer;
+    }
+
+    [data-theme='dark'] .dropdown-box .dropdown-item.highlight {
+        @apply bg-primary text-light cursor-pointer;
+    }
+
 }
 
 @layer utilities {
