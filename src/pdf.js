@@ -16,6 +16,14 @@ const path = require('path');
             waitUntil: 'networkidle0'
         });
 
+        await page.addStyleTag({
+            content: `
+                * {
+                    outline: none !important;
+                }
+            `,
+        });
+
         // Generisi PDF
         await page.pdf({
             path: './src/server/templates/ponuda.pdf',

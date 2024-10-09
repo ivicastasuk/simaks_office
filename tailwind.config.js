@@ -12,7 +12,8 @@ module.exports = {
 				light: '#FDFFFC'
 			},
 			height: {
-				main: "calc(100vh - 32px)"
+				main: "calc(100vh - 32px)",
+				view: "calc(100vh - 72px)"
 			}
 		},
 	},

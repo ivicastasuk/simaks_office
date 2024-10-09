@@ -2,11 +2,68 @@
 <html lang="sr" data-theme="emerald">
     <head>
         <title>Simaks Office</title>
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://api.simaks.rs http://simaks/api/; img-src 'self' blob: data: https://images.simaks.rs http://simaks/img/; style-src 'self' 'unsafe-inline'; font-src 'self';">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://api.simaks.rs http://simaks/api/; img-src 'self' blob: data: https://images.simaks.rs http://simaks/img/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./css/main.css">
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<style>
+            * {
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+                font-family: 'Quicksand', serif;
+                font-weight: 500;
+            }
+			#pagePreview {
+				color: #606060;
+			}
+            h1, p, span {
+                line-height: 1;
+            }
+            .bold {
+                font-weight: 700;
+            }
+            .table-header {
+                background-color: #4abb6b;
+                color: #ffffff;
+                text-align: center;
+                font-weight: 700;
+                font-size: 10pt;
+            }
+            .table-borders {
+                border-collapse: collapse;
+            }
+            .table-borders td {
+                border-top: 1px solid #4abb6b;
+                border-left: 1px solid #4abb6b;
+            }
+            .table-borders tr td:last-child {
+                border-right: 1px solid #4abb6b;
+            }
+            .table-borders tr:last-child td {
+                border-bottom: 1px solid #4abb6b;
+            }
+            .stretch {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 5pt;
+                padding: 2pt 0;
+            }
+            .stretch span {
+                flex: 1;
+                padding: 2pt;
+                outline: 1px solid #ccc;
+            }
+            td, th {
+                vertical-align: middle;
+                padding: 1pt;
+            }
+        </style>
     </head>
-    <body class="w-full h-full">
+    <body class="w-full h-screen">
 		<!-- Main content -->
 		<div class="w-full h-full grid grid-rows-[32px_1fr]">
 			<header id="titlebar" class="w-full h-full flex justify-between items-center bg-slate-300 text-slate-700 px-4">
@@ -70,7 +127,7 @@
 					<button class="tab">Ponude</button>
 				</nav>
 				<!-- Tab: Korisnički profil -->
-				<div id="content1" class="w-full h-full p-4 flex flex-col justify-center items-center">
+				<div id="content1" class="w-full h-main p-4 flex flex-col justify-center items-center">
 					<div class="w-1/2 flex-col justify-center items-center">
 						<div class="w-full flex justify-start items-center gap-4 my-4">
 							<label for="userUsername" class="w-1/3 text-right text-primary">Korisničko ime</label>
@@ -102,10 +159,10 @@
 					</div>
 				</div>
 				<!-- Tab: Podešavanja -->
-				<div id="content2" class="p-4 hidden">
+				<div id="content2" class="w-full h-main p-4 hidden">
 					<div class="w-full h-full flex gap-4">
 						<div class="w-1/2 flex">
-							<img id="companyLogo" src="http://simaks/img/logo.jpg" alt="Logo" class="w-full h-auto">
+							<img id="companyLogo" src="http://simaks/img/logo.jpg" alt="Logo" class="w-full">
 						</div>
 						<div class="w-1/2 flex flex-col justify-start items-start gap-4">
 							<div class="w-full">
@@ -143,7 +200,7 @@
 					</div>
 				</div>
 				<!-- Tab: Baze proizvoda -->
-				<div id="content3" class="w-full p-4 hidden">
+				<div id="content3" class="w-full h-main p-4 hidden flex-col justify-start items-start overflow-x-hidden overflow-y-auto">
 					<table class="w-full">
 						<thead>
 							<tr>
@@ -214,10 +271,10 @@
 						<button id="fetchData" class="p-2 btn btn-primary">Izvuci podatke</button>
 						<button id="insertData" name="insertData" class="p-2 btn btn-primary">Upisi podatke</button>
 					</div> 			
-					<div id="data-container"></div>
+					<div id="data-container" class="w-full"></div>
 				</div>
 				<!-- Tab: Baze klijenata -->
-				<div id="content4" class="p-4 hidden">
+				<div id="content4" class="w-full h-main p-4 hidden flex-col justify-start items-start overflow-x-hidden overflow-y-auto">
 					<table class="w-full">
 						<thead>
 							<tr>
@@ -260,11 +317,20 @@
 						<button id="fetchClients" class="p-2 btn btn-primary">Izvuci podatke</button>
 						<button id="insertClient" name="insertClient" class="p-2 btn btn-primary">Upisi podatke</button>
 					</div> 			
-					<div id="clients-container"></div>
+					<div id="clients-container" class="w-full"></div>
 				</div>
 				<!-- Tab: Rad sa ponudama -->
-				<div id="content5" class="p-4 hidden">
-					Ponude
+				<div id="content5" class="w-full h-main hidden flex-row justify-start items-start">
+					<div id="pagePreview" class="w-1/2 h-view p-4 overflow-auto flex justify-center items-start"></div>
+					<div class="w-1/2 h-view p-4 flex flex-col justify-start items-start gap-4">
+						<div class="w-full flex flex-col justify-start items-start gap-4">
+							<div>
+								<input type="text" id="searchInput" placeholder="Pretraži kod ili model" autocomplete="off">
+								<div id="dropdownList" class="dropdown-content"></div>
+								<div id="searchResult"></div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</main>
 		</main>
