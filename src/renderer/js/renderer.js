@@ -913,8 +913,38 @@ function displaySelectedItem(selectedItem) {
 	tdPrice.style.textAlign = 'center';
 	row.appendChild(tdPrice);
 
-	// 5. Ostale ćelije ostaju prazne
-	for (let i = 0; i < 6; i++) {
+	// 5. Rabat
+	const tdRabat = document.createElement('td');
+	tdRabat.setAttribute('contenteditable', 'true');
+	tdRabat.style.textAlign = 'center';
+	row.appendChild(tdRabat);
+
+	// 6. Cena sa rabatom
+	const tdCenaRabat = document.createElement('td');
+	tdCenaRabat.style.textAlign = 'center';
+	row.appendChild(tdCenaRabat);
+
+	// 7. Iznos
+	const tdIznos = document.createElement('td');
+	tdIznos.style.textAlign = 'center';
+	row.appendChild(tdIznos);
+
+	// 8. PDV %
+	const tdPdv = document.createElement('td');
+	tdPdv.setAttribute('contenteditable', 'true');
+	tdPdv.style.textAlign = 'center';
+	row.appendChild(tdPdv);
+
+	// 9. Iznos PDV-a
+	const tdIznosPdv = document.createElement('td');
+	const iznos = parseFormattedNumber(selectedItem.price);
+	const iznosPdv = iznos * (20 / 100);
+	tdIznosPdv.textContent = iznosPdv.toFixed(2);
+	tdIznosPdv.style.textAlign = 'center';
+	row.appendChild(tdIznosPdv);
+
+	// Ostale ćelije ostaju prazne
+	for (let i = 0; i < 1; i++) {
 		const tdEmpty = document.createElement('td');
 		tdEmpty.textContent = ''; // Prazan sadržaj
 		tdEmpty.style.textAlign = 'center';
@@ -940,4 +970,8 @@ function formatNumber(number) {
 function parseFormattedNumber(formattedNumber) {
 	// Uklanjanje tački koje se koriste kao separator hiljada i zamena zareza tačkom
 	return parseFloat(formattedNumber.replace(/\.(?=.*,)/g, '').replace(',', '.'));
+}
+
+function calculateItems() {
+
 }
