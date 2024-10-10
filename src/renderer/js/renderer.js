@@ -728,6 +728,7 @@ async function importTemplate(template) {
 		.then(response => response.text())
 		.then(data => {
 			document.getElementById('pagePreview').innerHTML = data;
+			dataFill();
 		})
 		.catch(error => console.error('Greska pri ucitavanju:', error));
 }
@@ -877,83 +878,139 @@ function selectResult(result) {
 }
 
 function displaySelectedItem(selectedItem) {
-	// Referenca na telo tabele
-	const tableBody = document.querySelector('#ponudaRow tbody');
-	if (!tableBody) {
-		console.error("Element 'ponudaRow tbody' nije pronađen.");
-		return;
-	}
+    // Referenca na telo tabele
+    const tableBody = document.querySelector('#ponudaRow tbody');
+    if (!tableBody) {
+        console.error("Element 'ponudaRow tbody' nije pronađen.");
+        return;
+    }
 
-	// Kreiranje novog reda (tr)
-	const row = document.createElement('tr');
+    // Provera da li artikal već postoji u tabeli (po šifri proizvoda)
+    const existingRow = Array.from(tableBody.rows).find(row => row.cells[1] && row.cells[1].textContent === selectedItem.code);
+    if (existingRow) {
+        console.warn('Artikal sa šifrom', selectedItem.code, 'već postoji u tabeli.');
+        Swal.fire({
+            title: 'Upozorenje',
+            text: 'Artikal sa šifrom ' + selectedItem.code + ' već postoji u tabeli.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
 
-	// 1. Redni broj (baziran na broju trenutnih redova u tabeli)
-	const rowIndex = tableBody.rows.length + 1;
-	const tdIndex = document.createElement('td');
-	tdIndex.textContent = rowIndex; // Redni broj (od 1 pa naviše)
-	tdIndex.style.textAlign = 'center';
-	row.appendChild(tdIndex);
+    // Kreiranje novog reda (tr)
+    const row = document.createElement('tr');
 
-	// 2. Šifra proizvoda (code)
-	const tdCode = document.createElement('td');
-	tdCode.textContent = selectedItem.code;
-	tdCode.style.textAlign = 'center';
-	row.appendChild(tdCode);
+    // 1. Redni broj (baziran na broju trenutnih redova u tabeli)
+    const rowIndex = tableBody.rows.length + 1;
+    const tdIndex = document.createElement('td');
+    tdIndex.textContent = rowIndex; // Redni broj (od 1 pa naviše)
+    tdIndex.style.textAlign = 'center';
+    row.appendChild(tdIndex);
 
-	// 3. Naziv koji kombinuje proizvođača, ime i model
-	const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
-	const tdCombined = document.createElement('td');
-	tdCombined.textContent = combinedString;
-	tdCombined.style.textAlign = 'center';
-	row.appendChild(tdCombined);
+    // 2. Šifra proizvoda (code)
+    const tdCode = document.createElement('td');
+    tdCode.textContent = selectedItem.code;
+    tdCode.style.textAlign = 'center';
+    row.appendChild(tdCode);
 
-	// 4. Cena (price)
-	const tdPrice = document.createElement('td');
-	tdPrice.textContent = formatNumber(parseFormattedNumber(selectedItem.price));
-	tdPrice.style.textAlign = 'center';
-	row.appendChild(tdPrice);
+    // 3. Naziv koji kombinuje proizvođača, ime i model
+    const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
+    const tdCombined = document.createElement('td');
+    tdCombined.textContent = combinedString;
+    tdCombined.style.textAlign = 'left';
+    row.appendChild(tdCombined);
 
-	// 5. Rabat
-	const tdRabat = document.createElement('td');
-	tdRabat.setAttribute('contenteditable', 'true');
-	tdRabat.style.textAlign = 'center';
-	row.appendChild(tdRabat);
+	// 4. Jedinica mere
+	const tdJM = document.createElement('td');
+	tdJM.textContent = selectedItem.unit;
+	tdJM.style.textAlign = 'center';
+	row.appendChild(tdJM);
 
-	// 6. Cena sa rabatom
-	const tdCenaRabat = document.createElement('td');
-	tdCenaRabat.style.textAlign = 'center';
-	row.appendChild(tdCenaRabat);
+	// 5. Kolicina
+    const tdKolicina = document.createElement('td');
+    tdKolicina.setAttribute('contenteditable', 'true');
+    tdKolicina.style.textAlign = 'center';
+	tdKolicina.setAttribute('cellName', `kolicina`);
+	tdKolicina.id = 'test';
+	tdKolicina.textContent = '1';
+    row.appendChild(tdKolicina);
 
-	// 7. Iznos
-	const tdIznos = document.createElement('td');
-	tdIznos.style.textAlign = 'center';
-	row.appendChild(tdIznos);
+	// 6. Cena (price)
+    const tdPrice = document.createElement('td');
+    tdPrice.textContent = formatNumber(parseFormattedNumber(selectedItem.price));
+	tdPrice.setAttribute('contenteditable', 'true');
+    tdPrice.style.textAlign = 'center';
+	tdPrice.setAttribute('cellName', `cena`);
+    row.appendChild(tdPrice);
 
-	// 8. PDV %
-	const tdPdv = document.createElement('td');
-	tdPdv.setAttribute('contenteditable', 'true');
-	tdPdv.style.textAlign = 'center';
-	row.appendChild(tdPdv);
+    // 7. Rabat
+    const tdRabat = document.createElement('td');
+    tdRabat.setAttribute('contenteditable', 'true');
+    tdRabat.style.textAlign = 'center';
+	tdRabat.setAttribute('cellName', `rabat`);
+	tdRabat.textContent ='0';
+    row.appendChild(tdRabat);
 
-	// 9. Iznos PDV-a
-	const tdIznosPdv = document.createElement('td');
-	const iznos = parseFormattedNumber(selectedItem.price);
-	const iznosPdv = iznos * (20 / 100);
-	tdIznosPdv.textContent = iznosPdv.toFixed(2);
-	tdIznosPdv.style.textAlign = 'center';
-	row.appendChild(tdIznosPdv);
+    // 8. Cena sa rabatom
+    const tdCenaRabat = document.createElement('td');
+    tdCenaRabat.style.textAlign = 'center';
+	tdCenaRabat.setAttribute('cellName', `cenarabat`);
+    row.appendChild(tdCenaRabat);
 
-	// Ostale ćelije ostaju prazne
-	for (let i = 0; i < 1; i++) {
-		const tdEmpty = document.createElement('td');
-		tdEmpty.textContent = ''; // Prazan sadržaj
-		tdEmpty.style.textAlign = 'center';
-		row.appendChild(tdEmpty);
-	}
+    // 9. Iznos
+    const tdIznos = document.createElement('td');
+    tdIznos.style.textAlign = 'center';
+	tdIznos.setAttribute('cellName', `iznos`);
+    row.appendChild(tdIznos);
 
-	// Dodavanje novog reda na kraj tbody-a
-	tableBody.appendChild(row);
+    // 10. PDV %
+    const tdPdv = document.createElement('td');
+    tdPdv.setAttribute('contenteditable', 'true');
+    tdPdv.style.textAlign = 'center';
+	tdPdv.setAttribute('cellName', `pdv`);
+	tdPdv.textContent = '20'
+    row.appendChild(tdPdv);
+
+    // 11. Iznos PDV-a
+    const tdIznosPdv = document.createElement('td');
+    const iznos = parseFormattedNumber(selectedItem.price);
+    const iznosPdv = iznos * (20 / 100);
+    tdIznosPdv.textContent = iznosPdv.toFixed(2);
+    tdIznosPdv.style.textAlign = 'center';
+	tdIznosPdv.setAttribute('cellName', `iznospdv`);
+    row.appendChild(tdIznosPdv);
+
+	// 12. Ukupno
+	const tdUkupno = document.createElement('td');
+	tdUkupno.textContent = '';
+	tdUkupno.style.textAlign = 'center';
+	tdUkupno.setAttribute('cellName', `ukupno`);
+	row.appendChild(tdUkupno);
+
+    // Dodavanje novog reda na kraj tbody-a
+    tableBody.appendChild(row);
+
+	calculateItems();
+	addListeners();
+	calculateSumm();
 }
+
+function addListeners() {
+	// Event listeneri na sve editabilne celije u ponudi
+	const editableCells = document.querySelectorAll('#ponudaRow tbody td[contenteditable="true"]');
+	
+	editableCells.forEach(cell => {
+		cell.removeEventListener('input', () => {
+			console.log('uklanjanje event listenera');
+		});
+		// Dodavanje 'input' događaja na svaki <td>
+		cell.addEventListener('input', () => {
+			calculateItems();
+			calculateSumm();
+		});
+	});
+};
 
 function formatNumber(number) {
 	// Proverite da li je prosleđeni broj validan
@@ -973,5 +1030,117 @@ function parseFormattedNumber(formattedNumber) {
 }
 
 function calculateItems() {
+	
+    // Selektujemo sve redove tabele, pretpostavljamo da tabela ima id "tabela-artikli"
+    const rows = document.querySelectorAll('#ponudaRow tbody tr');
 
+    rows.forEach(row => {
+        // Pronalaženje svih ćelija u trenutnom redu
+        const kolicinaCell = row.querySelector('[cellName="kolicina"]');
+        const cenaCell = row.querySelector('[cellName="cena"]');
+        const rabatCell = row.querySelector('[cellName="rabat"]');
+        const cenaRabatCell = row.querySelector('[cellName="cenarabat"]');
+        const iznosCell = row.querySelector('[cellName="iznos"]');
+        const pdvCell = row.querySelector('[cellName="pdv"]');
+        const cenaPdvCell = row.querySelector('[cellName="iznospdv"]');
+        const ukupnoCell = row.querySelector('[cellName="ukupno"]');
+
+        // Parsiranje vrednosti iz ćelija
+        const kolicina = parseFloat(kolicinaCell.innerText) || 0;
+        const cena = parseFloat(parseFormattedNumber(cenaCell.innerText)) || 0;
+        const rabat = parseInt(rabatCell.innerText) || 0;
+        const pdv = parseInt(pdvCell.innerText) || 0;
+
+        // Izračunavanje cene sa rabatom
+        const cenaSaRabatom = cena * (1 - rabat / 100);	
+        cenaRabatCell.innerText = cenaSaRabatom.toFixed(2);
+
+        // Izračunavanje iznosa (količina * cena sa rabatom)
+        const iznos = kolicina * cenaSaRabatom;
+        iznosCell.innerText = iznos.toFixed(2);
+
+        // Izračunavanje PDV-a (procenta od iznosa)
+        const iznosPdv = iznos * (pdv / 100);
+        cenaPdvCell.innerText = iznosPdv.toFixed(2);
+
+        // Izračunavanje ukupne cene (iznos + PDV)
+        const ukupno = iznos + iznosPdv;
+        ukupnoCell.innerText = ukupno.toFixed(2);
+
+    });
+}
+
+function calculateSumm(){
+	// Izracunavanje sume za iznos kolonu
+	const colIznos = document.querySelectorAll('[cellName="iznos"]');
+	
+	let sumaIznos = 0;
+	colIznos.forEach(item => {
+		// let iznos = parseFormattedNumber(item.innerText);
+		sumaIznos += parseFloat(parseFormattedNumber(item.innerText));
+	});
+	document.getElementById('sumaIznos').textContent = formatNumber(sumaIznos);
+
+	// Izracunavanje sume za iznos pdv-a kolonu
+	const colIznosPdv = document.querySelectorAll('[cellName="iznospdv"]');
+	
+	let sumaIznosPdv = 0;
+	colIznosPdv.forEach(item => {
+		// let iznosPdv = parseFormattedNumber(item.innerText);
+		sumaIznosPdv += parseFloat(parseFormattedNumber(item.innerText));
+	});
+	document.getElementById('sumaPDV').textContent = formatNumber(sumaIznosPdv);
+
+	// Izracunavanje sume za ukupan iznos
+	const colUkupno = document.querySelectorAll('[cellName="ukupno"]');
+	
+	let sumaUkupno = 0;
+	colUkupno.forEach(item => {
+		// let ukupno = parseFormattedNumber(item.innerText);
+		sumaUkupno += parseFloat(parseFormattedNumber(item.innerText));
+	});
+	document.getElementById('sumaUkupno').textContent = formatNumber(sumaUkupno);
+
+	// Izracunavanje ukupne sume bez rabata i pdv-a
+	const finalUkupno = document.getElementById('finalUkupno');
+	const rows = document.querySelectorAll('#ponudaRow tbody tr');
+	let kolicina = 0;
+	let cena = 0;
+	let sumaFinal = 0;
+	rows.forEach(row => {
+		kolicina = row.querySelector('[cellName="kolicina"]').innerText;
+		cena = row.querySelector('[cellName="cena"]').innerText;
+		sumaFinal += parseFloat(parseFormattedNumber(kolicina))*parseFloat(parseFormattedNumber(cena));
+	});
+	finalUkupno.textContent = formatNumber(sumaFinal);
+
+	// Izracunavanje iznosa ukupnog rabata
+	const finalRabat = document.getElementById('finalRabat');
+	finalRabat.textContent = formatNumber(sumaFinal - sumaIznos);
+
+	// Ispisivanje iznosa
+	document.getElementById('finalIznos').textContent = formatNumber(sumaIznos);
+
+	// Ispisivanje PDV-a
+	document.getElementById('finalPDV').textContent = formatNumber(sumaIznosPdv);
+
+	// Ispisivanje ukupnog iznosa za placanje
+	document.getElementById('finalPlacanje').textContent = formatNumber(sumaUkupno);
+}
+
+function dataFill(){
+	const companyData = JSON.parse(localStorage.getItem("settings"));
+	document.getElementById('companyName').textContent = companyData.company;
+	document.getElementById('companyAddress').textContent = companyData.address;
+	document.getElementById('companyCity').textContent = companyData.city;
+	document.getElementById('companyPIB').textContent = companyData.pib;
+	document.getElementById('companyMB').textContent = companyData.mb;
+
+	// formatiranje i prikazivanje datuma
+	const danasnjiDatum = new Date();
+    const dan = String(danasnjiDatum.getDate()).padStart(2, '0');
+    const mesec = String(danasnjiDatum.getMonth() + 1).padStart(2, '0');
+    const godina = danasnjiDatum.getFullYear();
+    const formatiraniDatum = `${dan}.${mesec}.${godina}`;
+	document.getElementById('datum').textContent = formatiraniDatum;
 }

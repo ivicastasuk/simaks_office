@@ -1,16 +1,16 @@
-<div style="width: 210mm; height: 297mm; display: flex; flex-direction: column; justify-content: stretch; padding: 10mm; background-color: #ffffff;">
+<div style="width: 210mm; height: 297mm; display: flex; flex-direction: column; justify-content: stretch; padding: 15mm; background-color: #ffffff;">
     <div style="width: 100%; display: flex; justify-content: flex-start; align-items: stretch;">
         <div id="logo" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 20%; border: none; border-right: 1px solid #4abb6b; padding: 10pt;">
             <img src="http://simaks/img/logo.jpg" alt="Logo firme" style="display: block; max-width: 100%;">
             <p style="font-size: 7pt; color: #4abb6b;" class="bold">www.nestiqdesign.com</p>
         </div>
         <div id="podaci" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 30%;">
-            <h1 style="font-size: 16pt; color: #4abb6b;" class="bold">SIMAKS d.o.o.</h1>
+            <h1 style="font-size: 16pt; color: #4abb6b;" class="bold" id="companyName">SIMAKS d.o.o.</h1>
             <hr style="width: 100%; border: none; border-top: 1px solid #4abb6b; margin: 4pt 0;">
-            <p style="font-size: 7pt; color: #4abb6b;">Pere Popadića 3</p>
-            <p style="font-size: 7pt; color: #4abb6b;">21000 Novi Sad, R. SRBIJA</p>
-            <p style="font-size: 7pt; color: #4abb6b;">PIB: 108480120</p>
-            <p style="font-size: 7pt; color: #4abb6b;">MB: 21008001</p>
+            <p style="font-size: 7pt; color: #4abb6b;" id="companyAddress"></p>
+            <p style="font-size: 7pt; color: #4abb6b;" id="companyCity"></p>
+            <p style="font-size: 7pt; color: #4abb6b;">PIB: <span id="companyPIB"></span></p>
+            <p style="font-size: 7pt; color: #4abb6b;" id="companyMB">MB: <span id="companyMB"></span></p>
             <p style="font-size: 7pt; color: #4abb6b;">BANCA INTESA:</p>
             <p style="font-size: 7pt; color: #4abb6b;" class="bold">160-6000001231950-93</p>
             <p style="font-size: 7pt; color: #4abb6b;">KOMERCIJALNA BANKA A.D.:</p>
@@ -25,7 +25,7 @@
         </div>
     </div>
     <div style="padding: 10pt 0;">
-        <p style="font-size: 10pt;">Datum izdavanja ponude: 31.12.2024.</p>
+        <p style="font-size: 10pt;">Datum izdavanja ponude: <span id="datum"></span></p>
     </div>
     <div>
         <table style="width: 100%;" class="table-borders">
@@ -47,7 +47,7 @@
         <table id="ponudaRow" style="width: 100%; font-size: 7pt;" class="table-borders">
             <thead>
                 <tr>
-                    <th colspan="10" class="table-header">
+                    <th colspan="12" class="table-header">
                         PONUDA/PREDRAČUN BROJ: <span class="table-header">SM25-01</span>
                     </th>
                 </tr>
@@ -55,13 +55,15 @@
                     <td style="text-align: center;" class="bold">R.B.</td>
                     <td style="text-align: center;" class="bold">Š.P.</td>
                     <td style="text-align: center;" class="bold">NAZIV</td>
+                    <td style="text-align: center;" class="bold">J.M.</td>
+                    <td style="text-align: center;" class="bold">KOL.</td>
                     <td style="text-align: center;" class="bold">CENA</td>
                     <td style="text-align: center;" class="bold">% RABAT</td>
-                    <td style="text-align: center;" class="bold">CENA SA RABATOM</td>
+                    <td style="text-align: center;" class="bold">CENA SA RAB.</td>
                     <td style="text-align: center;" class="bold">IZNOS</td>
                     <td style="text-align: center;" class="bold">PDV %</td>
                     <td style="text-align: center;" class="bold">PDV</td>
-                    <td style="text-align: center;" class="bold">UKUPNO SA PDV-OM</td>
+                    <td style="text-align: center;" class="bold">UKUPNO</td>
                 </tr>
             </thead>
             <tbody>
@@ -69,12 +71,12 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6" style="text-align:center;">
+                    <td colspan="8" style="text-align:center;">
                     </td>
-                    <td style="text-align:center;" class="bold">0,00</td>
+                    <td id="sumaIznos" style="text-align:center;" class="bold">0,00</td>
                     <td style="text-align:center;"></td>
-                    <td style="text-align:center;" class="bold">0,00</th>
-                    <td class="table-header">0,00</td>
+                    <td id="sumaPDV" style="text-align:center;" class="bold">0,00</th>
+                    <td id="sumaUkupno" class="table-header">0,00</td>
                 </tr>
             </tfoot>
         </table>    
@@ -85,23 +87,23 @@
             <table style="font-size: 10pt;">
                 <tr>
                     <td style="text-align: right; padding-right: 10pt;">UKUPNO:</td>
-                    <td>0,00</td>
+                    <td id="finalUkupno">0,00</td>
                 </tr>
                 <tr>
                     <td style="text-align: right; padding-right: 10pt;">RABAT:</td>
-                    <td>0,00</td>
+                    <td id="finalRabat">0,00</td>
                 </tr>
                 <tr>
                     <td style="text-align: right; padding-right: 10pt;">IZNOS:</td>
-                    <td>0,00</td>
+                    <td id="finalIznos">0,00</td>
                 </tr>
                 <tr>
                     <td style="text-align: right; padding-right: 10pt;">PDV 20%:</td>
-                    <td>0,00</td>
+                    <td id="finalPDV">0,00</td>
                 </tr>
                 <tr>
                     <td style="color: #4abb6b; text-align: right; padding-right: 10pt;" class="bold">UKUPNO ZA PLAĆANJE:</td>
-                    <td>0,00</td>
+                    <td id="finalPlacanje">0,00</td>
                 </tr>
             </table>
         </div>
