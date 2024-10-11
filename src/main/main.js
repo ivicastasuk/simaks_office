@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { join } = require('path');
 const { fetchData, insertData, updateData } = require('./db/database.js');
 const fs = require('fs');
+const puppeteer = require('puppeteer');
+const path = require('path');
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -135,5 +137,44 @@ ipcMain.handle('save-image', async (event, fileName, buffer) => {
     } catch (err) {
         console.error('Error saving image:', err);
         return { success: false, message: 'Failed to save image', error: err };
+    }
+});
+
+// Event listener for creating PDF when #createPdf button is clicked
+ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
+    try {
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+
+        // Postavi sadržaj stranice na HTML iz #pagePreview
+        await page.setContent(pagePreviewHTML, {
+            waitUntil: 'networkidle0'
+        });
+
+        // Dodaj stilove ako je potrebno
+        await page.addStyleTag({
+            content: `
+                * {
+                    outline: none !important;
+                }
+            `,
+        });
+
+        // Generiši PDF
+        const pdfPath = path.resolve('./temp/ponude/ponuda.pdf');
+        await page.pdf({
+            path: pdfPath,
+            format: 'A4',
+            printBackground: true
+        });
+
+        await browser.close();
+        console.log('PDF uspešno generisan.');
+
+        // Vrati putanju do PDF-a nazad na frontend
+        event.reply('pdf-created', { success: true, path: pdfPath });
+    } catch (error) {
+        console.error('Došlo je do greške:', error);
+        event.reply('pdf-created', { success: false, message: error.message });
     }
 });

@@ -68,11 +68,16 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
 			saveLoggedUser(result.user);
 
 			// Pozivanje funkcije za iscitavanja podesavanja
-			fetchAndSaveSettings(result.user.company_id).then(() => {
-				displayCompanySettings();
-				importTemplate('ponuda');
-			});
-
+			(async () => {
+				try {
+					await fetchAndSaveSettings(result.user.company_id);
+					displayCompanySettings();
+					await importTemplate('ponuda');
+					fillUserData();
+				} catch (error) {
+					console.error('An error occurred:', error);
+				}
+			})();
 		} else {
 			console.error('Login failed:', result.message);
 			Swal.fire({
@@ -724,276 +729,341 @@ function saveLoggedUser(user) {
 }
 
 async function importTemplate(template) {
-	fetch(`../server/templates/${template}.html`)
-		.then(response => response.text())
-		.then(data => {
-			document.getElementById('pagePreview').innerHTML = data;
-			dataFill();
-		})
-		.catch(error => console.error('Greska pri ucitavanju:', error));
+    try {
+        const response = await fetch(`../server/templates/${template}.html`);
+        const data = await response.text();
+        document.getElementById('pagePreview').innerHTML = data;
+        await dataFill(); 
+    } catch (error) {
+        console.error('Greska pri ucitavanju:', error);
+    }
 }
 
-// Referenca na input polje i dropdown kontejner
-const searchInput = document.getElementById('searchInput');
-const dropdownList = document.getElementById('dropdownList');
+createDropdownSearch('searchInput', 'dropdownList', 'products', ['code', 'name', 'model', 'price']);
+createDropdownSearch('clientSelect', 'dropdownClients', 'clients', ['name', 'city', 'pib']);
 
-let activeIndex = -1; // Trenutni aktivni indeks za navigaciju kroz dropdown listu
-let dropdownItems = []; // Elementi dropdown liste sa kompletnim podacima
+// Generalized function for fetching data and displaying dropdown results
+async function createDropdownSearch(inputId, dropdownId, tableName, displayColumns) {
+    const searchInput = document.getElementById(inputId);
+    const dropdownList = document.getElementById(dropdownId);
 
-let selectedItem = {}; // Objekat za skladištenje izabranog rezultata
+    let activeIndex = -1; // Currently active index for navigating dropdown
+    let dropdownItems = []; // All dropdown items with complete data
 
-// Event listener za promenu u input polju
-searchInput.addEventListener('input', async () => {
-	const query = searchInput.value.trim();
+    searchInput.addEventListener('input', async () => {
+        const query = searchInput.value.trim();
 
-	// Sakrij dropdown ako nema teksta za pretragu
-	if (query.length === 0) {
-		dropdownList.innerHTML = '';
-		dropdownList.style.display = 'none';
-		return;
-	}
+        // Hide dropdown if there's no query
+        if (query.length === 0) {
+            dropdownList.innerHTML = '';
+            dropdownList.style.display = 'none';
+            return;
+        }
 
-	try {
-		// Slanje GET zahteva PHP backendu za pretragu
-		const response = await fetch(`http://simaks/api/search.php?q=${encodeURIComponent(query)}`);
-		const results = await response.json();
+        try {
+            // Sending GET request to PHP backend for search
+            const response = await fetch(`http://simaks/api/search.php?q=${encodeURIComponent(query)}&table=${tableName}`);
+            const results = await response.json();
 
-		// Prikazivanje rezultata u dropdown listi
-		if (results.length > 0) {
-			dropdownList.innerHTML = '';
-			dropdownItems = results; // Skladištimo sve rezultate
+            // Display results in the dropdown list
+            if (results.length > 0) {
+                dropdownList.innerHTML = '';
+                dropdownItems = results;
 
-			results.forEach((result, index) => {
-				const item = document.createElement('div');
-				item.classList.add('dropdown-item');
-				item.textContent = `${result.code} - ${result.name} - ${result.model} - ${result.price}`;
-				item.setAttribute('data-index', index); // Postavljanje indeksa
+                results.forEach((result, index) => {
+                    const item = document.createElement('div');
+                    item.classList.add('dropdown-item');
+                    
+                    // Dynamically create the content for the dropdown item
+                    item.textContent = displayColumns.map(col => result[col]).join(' - ');
+                    item.setAttribute('data-index', index);
 
-				// Dodavanje event listenera za klik na stavku
-				item.addEventListener('click', () => {
-					selectResult(result);
-				});
+                    // Add event listener for click on the item
+                    item.addEventListener('click', () => {
+                        selectResult(result, searchInput, dropdownId, tableName);
+                    });
 
-				// Dodavanje event listenera za `mouseenter` (kada miš pređe preko stavke)
-				item.addEventListener('mouseenter', () => {
-					activeIndex = index;
-					highlightItem(); // Osvetljava stavku mišem
-				});
+                    // Add event listener for mouse enter to highlight item
+                    item.addEventListener('mouseenter', () => {
+                        activeIndex = index;
+                        highlightItem(dropdownList, activeIndex);
+                    });
 
-				dropdownList.appendChild(item);
+                    dropdownList.appendChild(item);
+                });
+                dropdownList.style.display = 'block';
+                activeIndex = -1; // Reset active index
+            } else {
+                dropdownList.innerHTML = '<div class="dropdown-item">Nema rezultata</div>';
+                dropdownList.style.display = 'block';
+                dropdownItems = [];
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+        }
+    });
+
+    // Event listener for losing focus on input field
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            dropdownList.style.display = 'none';
+        }, 200);
+    });
+
+    // Event listener for keyboard navigation through dropdown
+    searchInput.addEventListener('keydown', (event) => {
+        if (dropdownItems.length === 0) {
+            return;
+        }
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                if (activeIndex < dropdownItems.length - 1) {
+                    activeIndex++;
+                    highlightItem(dropdownList, activeIndex);
+                }
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                if (activeIndex > 0) {
+                    activeIndex--;
+                    highlightItem(dropdownList, activeIndex);
+                }
+                break;
+            case 'Enter':
+                event.preventDefault();
+                if (activeIndex >= 0 && activeIndex < dropdownItems.length) {
+                    const selectedResult = dropdownItems[activeIndex];
+                    selectResult(selectedResult, searchInput, dropdownId, tableName);
+                }
+                break;
+            default:
+                break;
+        }
+    });
+}
+
+// Function for highlighting the current item in dropdown
+function highlightItem(dropdownList, activeIndex) {
+    Array.from(dropdownList.children).forEach((item, index) => {
+        if (index === activeIndex) {
+            item.classList.add('highlight');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('highlight');
+        }
+    });
+}
+
+// Function for selecting a result from dropdown
+function selectResult(result, searchInput, dropdownId, tableName) {
+    const dropdownList = document.getElementById(dropdownId);
+
+    // Postavi vrednost input polja na osnovu tabela
+    if (tableName === 'products') {
+        searchInput.value = '';
+    } else if (tableName === 'clients') {
+        searchInput.value = `${result.name} - ${result.city} - ${result.pib}`;
+    }
+
+    // Sakrij dropdown listu
+    dropdownList.style.display = 'none';
+
+    // Pozovi odgovarajuću funkciju za prikaz na frontendu na osnovu tabele
+    displaySelectedItem(result, tableName);
+}
+
+// Example function for displaying the selected item in a custom way
+function displaySelectedItem(selectedItem, tableName) {
+    const displayContainer = document.getElementById('searchResult');
+    if (!displayContainer) {
+        console.error("Element 'searchResult' nije pronađen.");
+        return;
+    }
+
+    if (tableName === 'products') {
+		// Prikaz za tabelu 'products'
+		// Referenca na telo tabele
+		const tableBody = document.querySelector('#ponudaRow tbody');
+		if (!tableBody) {
+			console.error("Element 'ponudaRow tbody' nije pronađen.");
+			return;
+		}
+
+		// Provera da li artikal već postoji u tabeli (po šifri proizvoda)
+		const existingRow = Array.from(tableBody.rows).find(row => row.cells[1] && row.cells[1].textContent === selectedItem.code);
+		if (existingRow) {
+			console.warn('Artikal sa šifrom', selectedItem.code, 'već postoji u tabeli.');
+			Swal.fire({
+				title: 'Upozorenje',
+				text: 'Artikal sa šifrom ' + selectedItem.code + ' već postoji u tabeli.',
+				icon: 'warning',
+				confirmButtonText: 'OK'
 			});
-			dropdownList.style.display = 'block';
-			activeIndex = -1; // Resetuj aktivni indeks
-		} else {
-			dropdownList.innerHTML = '<div class="dropdown-item">Nema rezultata</div>';
-			dropdownList.style.display = 'block';
-			dropdownItems = [];
+			return;
 		}
-	} catch (error) {
-		console.error('Error fetching search results:', error);
+
+		// Kreiranje novog reda (tr)
+		const row = document.createElement('tr');
+
+		// 1. Redni broj (baziran na broju trenutnih redova u tabeli)
+		const rowIndex = tableBody.rows.length + 1;
+		const tdIndex = document.createElement('td');
+		tdIndex.textContent = rowIndex; // Redni broj (od 1 pa naviše)
+		tdIndex.style.textAlign = 'center';
+		row.appendChild(tdIndex);
+
+		// 2. Šifra proizvoda (code)
+		const tdCode = document.createElement('td');
+		tdCode.textContent = selectedItem.code;
+		tdCode.style.textAlign = 'center';
+		row.appendChild(tdCode);
+
+		// // 3. Naziv koji kombinuje proizvođača, ime i model
+		// const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
+		// const tdCombined = document.createElement('td');
+		// tdCombined.textContent = combinedString;
+		// tdCombined.style.textAlign = 'left';
+		// row.appendChild(tdCombined);
+
+		// 3. Naziv koji kombinuje proizvođača, ime i model, sa tabelom unutar ćelije
+		const tdCombined = document.createElement('td');
+		tdCombined.style.textAlign = 'left';
+
+		// Kreiranje nove tabele unutar ćelije tdCombined
+		const tableInsideTd = document.createElement('table');
+
+		// Stilizacija interne tabele da se uklopi unutar ćelije
+		tableInsideTd.style.width = '100%';
+
+		// Kreiranje prvog reda tabele za sliku i naziv proizvoda
+		const row1 = document.createElement('tr');
+
+		// Prva ćelija prvog reda - za sliku proizvoda, koja se proteže kroz dva reda
+		const cellImage = document.createElement('td');
+		cellImage.rowSpan = 2; // Postavlja da se proteže kroz oba reda
+		cellImage.style.textAlign = 'center'; // Središnji poravnavanje slike
+		cellImage.style.width = '100px'; // Opcionalno, možeš postaviti širinu za ćeliju
+		const productImage = document.createElement('img');
+		productImage.src = `http://simaks/img/products/${selectedItem.img_url}`; // Postavi URL slike proizvoda
+		productImage.alt = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
+		productImage.style.maxWidth = '64px'; // Ograničenje maksimalne širine
+		productImage.style.height = 'auto'; // Održavanje proporcija slike
+		cellImage.appendChild(productImage);
+		row1.appendChild(cellImage);
+
+		// Druga ćelija prvog reda - kombinovani naziv proizvoda (proizvođač, naziv, model)
+		const cellCombinedName = document.createElement('td');
+		cellCombinedName.style.textAlign = 'left';
+		const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
+		cellCombinedName.textContent = combinedString;
+		row1.appendChild(cellCombinedName);
+
+		// Dodavanje prvog reda u internu tabelu
+		tableInsideTd.appendChild(row1);
+
+		// Kreiranje drugog reda tabele za opis proizvoda
+		const row2 = document.createElement('tr');
+
+		// Druga ćelija drugog reda - opis proizvoda
+		const cellDescription = document.createElement('td');
+		cellDescription.style.textAlign = 'left';
+		cellDescription.textContent = selectedItem.description; // Postavi opis proizvoda
+		row2.appendChild(cellDescription);
+
+		// Dodavanje drugog reda u internu tabelu
+		tableInsideTd.appendChild(row2);
+
+		// Dodavanje kreirane tabele u kombinovanu ćeliju
+		tdCombined.appendChild(tableInsideTd);
+
+		// Dodavanje kombinovane ćelije u red glavne tabele
+		row.appendChild(tdCombined);
+
+		// 4. Jedinica mere
+		const tdJM = document.createElement('td');
+		tdJM.textContent = selectedItem.unit;
+		tdJM.style.textAlign = 'center';
+		row.appendChild(tdJM);
+
+		// 5. Kolicina
+		const tdKolicina = document.createElement('td');
+		tdKolicina.setAttribute('contenteditable', 'true');
+		tdKolicina.style.textAlign = 'center';
+		tdKolicina.setAttribute('cellName', `kolicina`);
+		tdKolicina.id = 'test';
+		tdKolicina.textContent = '1';
+		row.appendChild(tdKolicina);
+
+		// 6. Cena (price)
+		const tdPrice = document.createElement('td');
+		tdPrice.textContent = formatNumber(parseFormattedNumber(selectedItem.price));
+		tdPrice.setAttribute('contenteditable', 'true');
+		tdPrice.style.textAlign = 'center';
+		tdPrice.setAttribute('cellName', `cena`);
+		row.appendChild(tdPrice);
+
+		// 7. Rabat
+		const tdRabat = document.createElement('td');
+		tdRabat.setAttribute('contenteditable', 'true');
+		tdRabat.style.textAlign = 'center';
+		tdRabat.setAttribute('cellName', `rabat`);
+		tdRabat.textContent ='0';
+		row.appendChild(tdRabat);
+
+		// 8. Cena sa rabatom
+		const tdCenaRabat = document.createElement('td');
+		tdCenaRabat.style.textAlign = 'center';
+		tdCenaRabat.setAttribute('cellName', `cenarabat`);
+		row.appendChild(tdCenaRabat);
+
+		// 9. Iznos
+		const tdIznos = document.createElement('td');
+		tdIznos.style.textAlign = 'center';
+		tdIznos.setAttribute('cellName', `iznos`);
+		row.appendChild(tdIznos);
+
+		// 10. PDV %
+		const tdPdv = document.createElement('td');
+		tdPdv.setAttribute('contenteditable', 'true');
+		tdPdv.style.textAlign = 'center';
+		tdPdv.setAttribute('cellName', `pdv`);
+		tdPdv.textContent = '20'
+		row.appendChild(tdPdv);
+
+		// 11. Iznos PDV-a
+		const tdIznosPdv = document.createElement('td');
+		const iznos = parseFormattedNumber(selectedItem.price);
+		const iznosPdv = iznos * (20 / 100);
+		tdIznosPdv.textContent = iznosPdv.toFixed(2);
+		tdIznosPdv.style.textAlign = 'center';
+		tdIznosPdv.setAttribute('cellName', `iznospdv`);
+		row.appendChild(tdIznosPdv);
+
+		// 12. Ukupno
+		const tdUkupno = document.createElement('td');
+		tdUkupno.textContent = '';
+		tdUkupno.style.textAlign = 'center';
+		tdUkupno.setAttribute('cellName', `ukupno`);
+		row.appendChild(tdUkupno);
+
+		// Dodavanje novog reda na kraj tbody-a
+		tableBody.appendChild(row);
+
+		calculateItems();
+		addListeners();
+		calculateSumm();
+
+	} else if (tableName === 'clients') {
+        // Prikaz za tabelu 'clients'
+		document.getElementById('nazivKupca').textContent = selectedItem.name;
+		document.getElementById('adresaKupca').textContent = selectedItem.address;
+		document.getElementById('mestoKupca').textContent = selectedItem.city;
+		document.getElementById('pibKupca').textContent = selectedItem.pib;
+		document.getElementById('mbKupca').textContent = selectedItem.mb;
+		
 	}
-});
-
-// Event listener za gubljenje fokusa sa input polja
-searchInput.addEventListener('blur', () => {
-	// Koristimo timeout kako bismo omogućili klik na dropdown pre zatvaranja
-	setTimeout(() => {
-		dropdownList.style.display = 'none';
-	}, 200);
-});
-
-// Event listener za navigaciju kroz dropdown listu sa tastaturom
-searchInput.addEventListener('keydown', (event) => {
-	if (dropdownItems.length === 0) {
-		return; // Nema stavki u dropdown listi, ništa za navigaciju
-	}
-
-	switch (event.key) {
-		case 'ArrowDown':
-			// Navigacija ka dole
-			event.preventDefault();
-			if (activeIndex < dropdownItems.length - 1) {
-				activeIndex++;
-				highlightItem();
-			}
-			break;
-		case 'ArrowUp':
-			// Navigacija ka gore
-			event.preventDefault();
-			if (activeIndex > 0) {
-				activeIndex--;
-				highlightItem();
-			}
-			break;
-		case 'Enter':
-			// Izbor trenutne stavke
-			event.preventDefault();
-			if (activeIndex >= 0 && activeIndex < dropdownItems.length) {
-				const selectedResult = dropdownItems[ activeIndex ];
-				selectResult(selectedResult);
-			}
-			break;
-		default:
-			break;
-	}
-});
-
-// Funkcija za označavanje trenutne stavke u dropdown listi
-function highlightItem() {
-	dropdownItems.forEach((_, index) => {
-		if (index === activeIndex) {
-			dropdownList.children[ index ].classList.add('highlight');
-			dropdownList.children[ index ].scrollIntoView({ block: 'nearest' });
-		} else {
-			dropdownList.children[ index ].classList.remove('highlight');
-		}
-	});
-}
-
-// Funkcija za izbor rezultata iz dropdown liste
-function selectResult(result) {
-	// Popunite globalni objekat sa izabranim podacima
-	selectedItem = {
-		id: result.id,
-		code: result.code,
-		type: result.type,
-		manufacturer: result.manufacturer,
-		name: result.name,
-		model: result.model,
-		img_url: result.img_url,
-		description: result.description,
-		items: result.items,
-		unit: result.unit,
-		price: parseFloat(result.price).toFixed(2)
-	};
-
-	// Prikazivanje izabranog proizvoda u input polju
-	searchInput.value = ``;
-
-	// Sakrij dropdown listu
-	dropdownList.style.display = 'none';
-
-	// Pozivanje funkcije za prikaz na frontendu
-	displaySelectedItem(selectedItem);
-}
-
-function displaySelectedItem(selectedItem) {
-    // Referenca na telo tabele
-    const tableBody = document.querySelector('#ponudaRow tbody');
-    if (!tableBody) {
-        console.error("Element 'ponudaRow tbody' nije pronađen.");
-        return;
-    }
-
-    // Provera da li artikal već postoji u tabeli (po šifri proizvoda)
-    const existingRow = Array.from(tableBody.rows).find(row => row.cells[1] && row.cells[1].textContent === selectedItem.code);
-    if (existingRow) {
-        console.warn('Artikal sa šifrom', selectedItem.code, 'već postoji u tabeli.');
-        Swal.fire({
-            title: 'Upozorenje',
-            text: 'Artikal sa šifrom ' + selectedItem.code + ' već postoji u tabeli.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    // Kreiranje novog reda (tr)
-    const row = document.createElement('tr');
-
-    // 1. Redni broj (baziran na broju trenutnih redova u tabeli)
-    const rowIndex = tableBody.rows.length + 1;
-    const tdIndex = document.createElement('td');
-    tdIndex.textContent = rowIndex; // Redni broj (od 1 pa naviše)
-    tdIndex.style.textAlign = 'center';
-    row.appendChild(tdIndex);
-
-    // 2. Šifra proizvoda (code)
-    const tdCode = document.createElement('td');
-    tdCode.textContent = selectedItem.code;
-    tdCode.style.textAlign = 'center';
-    row.appendChild(tdCode);
-
-    // 3. Naziv koji kombinuje proizvođača, ime i model
-    const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
-    const tdCombined = document.createElement('td');
-    tdCombined.textContent = combinedString;
-    tdCombined.style.textAlign = 'left';
-    row.appendChild(tdCombined);
-
-	// 4. Jedinica mere
-	const tdJM = document.createElement('td');
-	tdJM.textContent = selectedItem.unit;
-	tdJM.style.textAlign = 'center';
-	row.appendChild(tdJM);
-
-	// 5. Kolicina
-    const tdKolicina = document.createElement('td');
-    tdKolicina.setAttribute('contenteditable', 'true');
-    tdKolicina.style.textAlign = 'center';
-	tdKolicina.setAttribute('cellName', `kolicina`);
-	tdKolicina.id = 'test';
-	tdKolicina.textContent = '1';
-    row.appendChild(tdKolicina);
-
-	// 6. Cena (price)
-    const tdPrice = document.createElement('td');
-    tdPrice.textContent = formatNumber(parseFormattedNumber(selectedItem.price));
-	tdPrice.setAttribute('contenteditable', 'true');
-    tdPrice.style.textAlign = 'center';
-	tdPrice.setAttribute('cellName', `cena`);
-    row.appendChild(tdPrice);
-
-    // 7. Rabat
-    const tdRabat = document.createElement('td');
-    tdRabat.setAttribute('contenteditable', 'true');
-    tdRabat.style.textAlign = 'center';
-	tdRabat.setAttribute('cellName', `rabat`);
-	tdRabat.textContent ='0';
-    row.appendChild(tdRabat);
-
-    // 8. Cena sa rabatom
-    const tdCenaRabat = document.createElement('td');
-    tdCenaRabat.style.textAlign = 'center';
-	tdCenaRabat.setAttribute('cellName', `cenarabat`);
-    row.appendChild(tdCenaRabat);
-
-    // 9. Iznos
-    const tdIznos = document.createElement('td');
-    tdIznos.style.textAlign = 'center';
-	tdIznos.setAttribute('cellName', `iznos`);
-    row.appendChild(tdIznos);
-
-    // 10. PDV %
-    const tdPdv = document.createElement('td');
-    tdPdv.setAttribute('contenteditable', 'true');
-    tdPdv.style.textAlign = 'center';
-	tdPdv.setAttribute('cellName', `pdv`);
-	tdPdv.textContent = '20'
-    row.appendChild(tdPdv);
-
-    // 11. Iznos PDV-a
-    const tdIznosPdv = document.createElement('td');
-    const iznos = parseFormattedNumber(selectedItem.price);
-    const iznosPdv = iznos * (20 / 100);
-    tdIznosPdv.textContent = iznosPdv.toFixed(2);
-    tdIznosPdv.style.textAlign = 'center';
-	tdIznosPdv.setAttribute('cellName', `iznospdv`);
-    row.appendChild(tdIznosPdv);
-
-	// 12. Ukupno
-	const tdUkupno = document.createElement('td');
-	tdUkupno.textContent = '';
-	tdUkupno.style.textAlign = 'center';
-	tdUkupno.setAttribute('cellName', `ukupno`);
-	row.appendChild(tdUkupno);
-
-    // Dodavanje novog reda na kraj tbody-a
-    tableBody.appendChild(row);
-
-	calculateItems();
-	addListeners();
-	calculateSumm();
 }
 
 function addListeners() {
@@ -1002,7 +1072,6 @@ function addListeners() {
 	
 	editableCells.forEach(cell => {
 		cell.removeEventListener('input', () => {
-			console.log('uklanjanje event listenera');
 		});
 		// Dodavanje 'input' događaja na svaki <td>
 		cell.addEventListener('input', () => {
@@ -1025,8 +1094,18 @@ function formatNumber(number) {
 }
 
 function parseFormattedNumber(formattedNumber) {
-	// Uklanjanje tački koje se koriste kao separator hiljada i zamena zareza tačkom
-	return parseFloat(formattedNumber.replace(/\.(?=.*,)/g, '').replace(',', '.'));
+    // Proveravamo da li je ulaz već broj, i ako jeste, vraćamo ga
+    if (typeof formattedNumber === 'number') {
+        return formattedNumber;
+    }
+
+    // Proveravamo da li je ulaz string, u suprotnom ga konvertujemo
+    if (typeof formattedNumber !== 'string') {
+        formattedNumber = formattedNumber.toString();
+    }
+    
+    // Uklanjanje tački koje se koriste kao separator hiljada i zamena zareza tačkom
+    return parseFloat(formattedNumber.replace(/\.(?=.*,)/g, '').replace(',', '.'));
 }
 
 function calculateItems() {
@@ -1144,3 +1223,39 @@ function dataFill(){
     const formatiraniDatum = `${dan}.${mesec}.${godina}`;
 	document.getElementById('datum').textContent = formatiraniDatum;
 }
+
+async function fillUserData(){
+	const userData = JSON.parse(localStorage.getItem('user'));
+	const companyData = JSON.parse(localStorage.getItem('settings'));
+		
+	document.getElementById('userName').textContent = `${userData.first_name} ${userData.last_name}`;
+	document.getElementById('userPhone').textContent = userData.phone;
+	document.getElementById('userEmail').textContent = userData.email;
+	document.getElementById('companyPhone').textContent = companyData.phone;
+}
+
+
+// Dodavanje event listenera za klik na dugme
+document.getElementById('createPdf').addEventListener('click', async () => {
+    const pagePreviewElement = document.getElementById('pagePreview');
+    if (!pagePreviewElement) {
+        console.error('Element sa ID-jem #pagePreview nije pronađen.');
+        return;
+    }
+
+    // Uzimanje HTML sadržaja elementa
+    const pagePreviewHTML = pagePreviewElement.outerHTML;
+
+    // Slanje sadržaja na backend za kreiranje PDF-a
+    window.electronAPI.createPdf(pagePreviewHTML);
+});
+
+// Primanje obaveštenja o kreiranju PDF-a
+window.electronAPI.onPdfCreated((event, response) => {
+    if (response.success) {
+        console.log('PDF je uspešno kreiran:', response.path);
+        // Ovde možeš otvoriti ili preuzeti generisani PDF fajl
+    } else {
+        console.error('Greška prilikom kreiranja PDF-a:', response.message);
+    }
+});

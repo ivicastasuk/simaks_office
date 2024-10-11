@@ -1,138 +1,201 @@
-<div style="width: 210mm; height: 297mm; display: flex; flex-direction: column; justify-content: stretch; padding: 15mm; background-color: #ffffff;">
-    <div style="width: 100%; display: flex; justify-content: flex-start; align-items: stretch;">
-        <div id="logo" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 20%; border: none; border-right: 1px solid #4abb6b; padding: 10pt;">
-            <img src="http://simaks/img/logo.jpg" alt="Logo firme" style="display: block; max-width: 100%;">
-            <p style="font-size: 7pt; color: #4abb6b;" class="bold">www.nestiqdesign.com</p>
-        </div>
-        <div id="podaci" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 30%;">
-            <h1 style="font-size: 16pt; color: #4abb6b;" class="bold" id="companyName">SIMAKS d.o.o.</h1>
-            <hr style="width: 100%; border: none; border-top: 1px solid #4abb6b; margin: 4pt 0;">
-            <p style="font-size: 7pt; color: #4abb6b;" id="companyAddress"></p>
-            <p style="font-size: 7pt; color: #4abb6b;" id="companyCity"></p>
-            <p style="font-size: 7pt; color: #4abb6b;">PIB: <span id="companyPIB"></span></p>
-            <p style="font-size: 7pt; color: #4abb6b;" id="companyMB">MB: <span id="companyMB"></span></p>
-            <p style="font-size: 7pt; color: #4abb6b;">BANCA INTESA:</p>
-            <p style="font-size: 7pt; color: #4abb6b;" class="bold">160-6000001231950-93</p>
-            <p style="font-size: 7pt; color: #4abb6b;">KOMERCIJALNA BANKA A.D.:</p>
-            <p style="font-size: 7pt; color: #4abb6b;" class="bold">205-0000000206663-26</p>
-        </div>
-        <div id="klijent" style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; width: 50%; padding-left: 10pt;">
-            <p style="font-size: 10pt; color: #4abb6b;" class="bold">NAZIV KUPCA: <span style="color: #606060;">SPECIJALISTICKA STOMATOLOSKA ORDINACIJA DR. LOLIN</span></p>
-            <p style="font-size: 10pt; color: #4abb6b;" class="bold">ADRESA: <span></span></p>
-            <p style="font-size: 10pt; color: #4abb6b;" class="bold">MESTO: <span></span></p>
-            <p style="font-size: 10pt; color: #4abb6b;" class="bold">PIB: <span></span></p>
-            <p style="font-size: 10pt; color: #4abb6b;" class="bold">MATIČNI BROJ: <span></span></p>
-        </div>
-    </div>
-    <div style="padding: 10pt 0;">
-        <p style="font-size: 10pt;">Datum izdavanja ponude: <span id="datum"></span></p>
-    </div>
-    <div>
-        <table style="width: 100%;" class="table-borders">
-            <tr>
-                <td style="font-size: 8pt; color: #4abb6b; text-align: center;">SASTAVIO/LA:</td>
-                <td style="font-size: 8pt; text-align: center;">MIRJANA JANKOVIĆ</td>
-            </tr>
-            <tr>
-                <td style="font-size: 8pt; color: #4abb6b; text-align: center;">TELEFON:</td>
-                <td style="font-size: 8pt; text-align: center;">+381 21 410 800</td>
-            </tr>
-            <tr>
-                <td style="font-size: 8pt; color: #4abb6b; text-align: center;">MOBILNI:</td>
-                <td style="font-size: 8pt; text-align: center;">+381 64 645 87 80</td>
-            </tr>
-        </table>
-    </div>
-    <div style="flex: 1; width: 100%; padding: 10pt 0;">
-        <table id="ponudaRow" style="width: 100%; font-size: 7pt;" class="table-borders">
-            <thead>
-                <tr>
-                    <th colspan="12" class="table-header">
-                        PONUDA/PREDRAČUN BROJ: <span class="table-header">SM25-01</span>
-                    </th>
-                </tr>
-                <tr>
-                    <td style="text-align: center;" class="bold">R.B.</td>
-                    <td style="text-align: center;" class="bold">Š.P.</td>
-                    <td style="text-align: center;" class="bold">NAZIV</td>
-                    <td style="text-align: center;" class="bold">J.M.</td>
-                    <td style="text-align: center;" class="bold">KOL.</td>
-                    <td style="text-align: center;" class="bold">CENA</td>
-                    <td style="text-align: center;" class="bold">% RABAT</td>
-                    <td style="text-align: center;" class="bold">CENA SA RAB.</td>
-                    <td style="text-align: center;" class="bold">IZNOS</td>
-                    <td style="text-align: center;" class="bold">PDV %</td>
-                    <td style="text-align: center;" class="bold">PDV</td>
-                    <td style="text-align: center;" class="bold">UKUPNO</td>
-                </tr>
-            </thead>
-            <tbody>
+<html>
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <style>
+            * {
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+                font-family: 'Quicksand', serif;
+                font-weight: 500;
+            }
+			#pagePreview {
+				color: #606060;
+			}
+            h1, p, span {
+                line-height: 1;
+            }
+            .bold {
+                font-weight: 700;
+            }
+            .table-header {
+                background-color: #4abb6b;
+                color: #ffffff;
+                text-align: center;
+                font-weight: 700;
+                font-size: 10pt;
+            }
+            .table-borders {
+                border-collapse: collapse;
+            }
+            .table-borders td {
+                border-top: 1px solid #4abb6b;
+                border-left: 1px solid #4abb6b;
+            }
+            .table-borders tr td:last-child {
+                border-right: 1px solid #4abb6b;
+            }
+            .table-borders tr:last-child td {
+                border-bottom: 1px solid #4abb6b;
+            }
+            .stretch {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 5pt;
+                padding: 2pt 0;
+            }
+            .stretch span {
+                flex: 1;
+                padding: 2pt;
+                outline: 1px solid #ccc;
+            }
+            td, th {
+                vertical-align: middle;
+                padding: 1pt;
+            }
+        </style>
+        <div style="width: 210mm; height: 297mm; display: flex; flex-direction: column; justify-content: stretch; padding: 15mm; background-color: #ffffff;">
+            <div style="width: 100%; display: flex; justify-content: flex-start; align-items: stretch;">
+                <div id="logo" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 20%; border: none; border-right: 1px solid #4abb6b; padding: 10pt;">
+                    <img src="http://simaks/img/logo.jpg" alt="Logo firme" style="display: block; max-width: 100%;">
+                    <p style="font-size: 7pt; color: #4abb6b;" class="bold">www.nestiqdesign.com</p>
+                </div>
+                <div id="podaci" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 30%;">
+                    <h1 style="font-size: 16pt; color: #4abb6b;" class="bold" id="companyName"></h1>
+                    <hr style="width: 100%; border: none; border-top: 1px solid #4abb6b; margin: 4pt 0;">
+                    <p style="font-size: 7pt; color: #4abb6b;" id="companyAddress"></p>
+                    <p style="font-size: 7pt; color: #4abb6b;" id="companyCity"></p>
+                    <p style="font-size: 7pt; color: #4abb6b;">PIB: <span id="companyPIB"></span></p>
+                    <p style="font-size: 7pt; color: #4abb6b;" id="companyMB">MB: <span id="companyMB"></span></p>
+                    <p style="font-size: 7pt; color: #4abb6b;">BANCA INTESA:</p>
+                    <p style="font-size: 7pt; color: #4abb6b;" class="bold">160-6000001231950-93</p>
+                    <p style="font-size: 7pt; color: #4abb6b;">KOMERCIJALNA BANKA A.D.:</p>
+                    <p style="font-size: 7pt; color: #4abb6b;" class="bold">205-0000000206663-26</p>
+                </div>
+                <div id="klijent" style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; width: 50%; padding-left: 10pt;">
+                    <p style="font-size: 10pt; color: #4abb6b;" class="bold">NAZIV KUPCA: <span id="nazivKupca" style="color: #606060; text-transform: uppercase;"></span></p>
+                    <p style="font-size: 10pt; color: #4abb6b;" class="bold">ADRESA: <span id="adresaKupca" style="color: #606060; text-transform: uppercase;"></span></p>
+                    <p style="font-size: 10pt; color: #4abb6b;" class="bold">MESTO: <span id="mestoKupca" style="color: #606060; text-transform: uppercase;"></span></p>
+                    <p style="font-size: 10pt; color: #4abb6b;" class="bold">PIB: <span id="pibKupca" style="color: #606060; text-transform: uppercase;"></span></p>
+                    <p style="font-size: 10pt; color: #4abb6b;" class="bold">MATIČNI BROJ: <span id="mbKupca" style="color: #606060; text-transform: uppercase;"></span></p>
+                </div>
+            </div>
+            <div style="padding: 10pt 0;">
+                <p style="font-size: 7pt;">Datum izdavanja ponude: <span id="datum"></span></p>
+            </div>
+            <div>
+                <table style="width: 100%;" class="table-borders">
+                    <tr>
+                        <td style="font-size: 8pt; color: #4abb6b; text-align: center;">SASTAVIO/LA:</td>
+                        <td style="font-size: 8pt; text-align: center; text-transform: uppercase;" id="userName"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 8pt; color: #4abb6b; text-align: center;">TELEFON:</td>
+                        <td style="font-size: 8pt; text-align: center; text-transform: uppercase;" id="companyPhone"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 8pt; color: #4abb6b; text-align: center;">MOBILNI:</td>
+                        <td style="font-size: 8pt; text-align: center; text-transform: uppercase;" id="userPhone"></td>
+                    </tr>
+                </table>
+            </div>
+            <div style="flex: 1; width: 100%; padding: 10pt 0;">
+                <table id="ponudaRow" style="width: 100%; font-size: 7pt;" class="table-borders">
+                    <thead>
+                        <tr>
+                            <th colspan="12" class="table-header">
+                                PONUDA/PREDRAČUN BROJ: <span class="table-header">SM25-01</span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;" class="bold">R.B.</td>
+                            <td style="text-align: center;" class="bold">Š.P.</td>
+                            <td style="text-align: center;" class="bold">NAZIV</td>
+                            <td style="text-align: center;" class="bold">J.M.</td>
+                            <td style="text-align: center;" class="bold">KOL.</td>
+                            <td style="text-align: center;" class="bold">CENA</td>
+                            <td style="text-align: center;" class="bold">% RABAT</td>
+                            <td style="text-align: center;" class="bold">CENA SA RAB.</td>
+                            <td style="text-align: center;" class="bold">IZNOS</td>
+                            <td style="text-align: center;" class="bold">PDV %</td>
+                            <td style="text-align: center;" class="bold">PDV</td>
+                            <td style="text-align: center;" class="bold">UKUPNO</td>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="8" style="text-align:center;">
-                    </td>
-                    <td id="sumaIznos" style="text-align:center;" class="bold">0,00</td>
-                    <td style="text-align:center;"></td>
-                    <td id="sumaPDV" style="text-align:center;" class="bold">0,00</th>
-                    <td id="sumaUkupno" class="table-header">0,00</td>
-                </tr>
-            </tfoot>
-        </table>    
-        <div style="padding: 10pt 0;">
-            <p style="font-size: 7pt;" class="bold">SLOVIMA: <span style="font-size: 7pt;" class="bold" contenteditable> RSD I 00/100</span></p>
-        </div>
-        <div style="padding: 10pt 0; display: flex; justify-content: flex-end;">
-            <table style="font-size: 10pt;">
-                <tr>
-                    <td style="text-align: right; padding-right: 10pt;">UKUPNO:</td>
-                    <td id="finalUkupno">0,00</td>
-                </tr>
-                <tr>
-                    <td style="text-align: right; padding-right: 10pt;">RABAT:</td>
-                    <td id="finalRabat">0,00</td>
-                </tr>
-                <tr>
-                    <td style="text-align: right; padding-right: 10pt;">IZNOS:</td>
-                    <td id="finalIznos">0,00</td>
-                </tr>
-                <tr>
-                    <td style="text-align: right; padding-right: 10pt;">PDV 20%:</td>
-                    <td id="finalPDV">0,00</td>
-                </tr>
-                <tr>
-                    <td style="color: #4abb6b; text-align: right; padding-right: 10pt;" class="bold">UKUPNO ZA PLAĆANJE:</td>
-                    <td id="finalPlacanje">0,00</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-    <div>
-        <div>
-            <p style="font-size: 7pt;" class="bold">* ROK VAŽENJA PONUDE JE <span style="font-size: 7pt;" class="bold" contenteditable>14</span> DANA</p>
-        </div>
-        <div style="padding: 10pt 0; width: 100%;">
-            <table style="font-size: 8pt; width: 100%;" class="table-borders">
-                <tr>
-                    <td style="color: #4abb6b; padding: 0 10pt;" class="bold">NAPOMENA:</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2pt 10pt;" contenteditable>Test verzija templejta ponude.</td>
-                </tr>
-            </table>
-        </div>
-        <div style="display: flex; flex-direction: column;">
-            <div class="stretch">
-                <p style="font-size: 7pt;" class="bold">ROK ISPORUKE: </p><span contenteditable style="font-size: 7pt;"></span>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="8" style="text-align:center;">
+                            </td>
+                            <td id="sumaIznos" style="text-align:center;" class="bold">0,00</td>
+                            <td style="text-align:center;"></td>
+                            <td id="sumaPDV" style="text-align:center;" class="bold">0,00</th>
+                            <td id="sumaUkupno" class="table-header">0,00</td>
+                        </tr>
+                    </tfoot>
+                </table>    
+                <div style="padding: 10pt 0;">
+                    <p style="font-size: 7pt;" class="bold">SLOVIMA: <span style="font-size: 7pt;" class="bold" contenteditable> RSD I 00/100</span></p>
+                </div>
+                <div style="padding: 10pt 0; display: flex; justify-content: flex-end;">
+                    <table style="font-size: 10pt;">
+                        <tr>
+                            <td style="text-align: right; padding-right: 10pt;">UKUPNO:</td>
+                            <td id="finalUkupno" style="text-align: right;">0,00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding-right: 10pt;">RABAT:</td>
+                            <td id="finalRabat" style="text-align: right;">0,00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding-right: 10pt;">IZNOS:</td>
+                            <td id="finalIznos" style="text-align: right;">0,00</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding-right: 10pt;">PDV 20%:</td>
+                            <td id="finalPDV" style="text-align: right;">0,00</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #4abb6b; text-align: right; padding-right: 10pt;" class="bold">UKUPNO ZA PLAĆANJE:</td>
+                            <td id="finalPlacanje" style="text-align: right;">0,00</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-            <div class="stretch">
-                <p style="font-size: 7pt;" class="bold">NAČIN PLAĆANJA:</p><span contenteditable style="font-size: 7pt;"></span>
+            <div>
+                <div>
+                    <p style="font-size: 7pt;" class="bold">* ROK VAŽENJA PONUDE JE <span style="font-size: 7pt;" class="bold" contenteditable>14</span> DANA</p>
+                </div>
+                <div style="padding: 10pt 0; width: 100%;">
+                    <table style="font-size: 8pt; width: 100%;" class="table-borders">
+                        <tr>
+                            <td style="color: #4abb6b; padding: 0 10pt;" class="bold">NAPOMENA:</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2pt 10pt;" contenteditable>Test verzija templejta ponude.</td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <div class="stretch">
+                        <p style="font-size: 7pt;" class="bold">ROK ISPORUKE: </p><span contenteditable style="font-size: 7pt;"></span>
+                    </div>
+                    <div class="stretch">
+                        <p style="font-size: 7pt;" class="bold">NAČIN PLAĆANJA:</p><span contenteditable style="font-size: 7pt;"></span>
+                    </div>
+                </div>
+                <div style="padding-top: 10pt;">
+                    <p style="font-size: 7pt;">U slučaju prihvatanja ponude i naknadnog odustanka od iste od strane kupca, ponuđač zadržava pravo da zaračuna nadoknadu štete u skladu sa internim Terifnikom kompanije.</p>
+                    <p style="font-size: 7pt;">Molimo Vas da nam, ukoliko ste saglasni sa ovom ponudom, istu, overenu i potpisanu uz naznaku "Neopozivo naručujem opremu po ovoj ponudi" pošaljete na e-mail: <span id="userEmail"></span></p>
+                </div>
             </div>
         </div>
-        <div style="padding-top: 10pt;">
-            <p style="font-size: 7pt;">U slučaju prihvatanja ponude i naknadnog odustanka od iste od strane kupca, ponuđač zadržava pravo da zaračuna nadoknadu štete u skladu sa internim Terifnikom kompanije.</p>
-            <p style="font-size: 7pt;">Molimo Vas da nam, ukoliko ste saglasni sa ovom ponudom, istu, overenu i potpisanu uz naznaku "Neopozivo naručujem opremu po ovoj ponudi" pošaljete na e-mail: <span>mjankovic@nestiqdesign.com</span></p>
-        </div>
-    </div>
-</div>
+    </body>
+</html>

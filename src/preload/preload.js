@@ -27,4 +27,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     minimizeWindow: () => ipcRenderer.send('minimize-window'),
     maximizeWindow: () => ipcRenderer.send('maximize-window'),
     unmaximizeWindow: () => ipcRenderer.send('unmaximize-window'),
+    createPdf: (htmlContent) => ipcRenderer.send('create-pdf', htmlContent),
+    onPdfCreated: (callback) => ipcRenderer.on('pdf-created', (event, response) => callback(event, response))
 });
