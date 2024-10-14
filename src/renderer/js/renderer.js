@@ -875,7 +875,7 @@ function selectResult(result, searchInput, dropdownId, tableName) {
 }
 
 // Example function for displaying the selected item in a custom way
-function displaySelectedItem(selectedItem, tableName) {
+async function displaySelectedItem(selectedItem, tableName) {
     const displayContainer = document.getElementById('searchResult');
     if (!displayContainer) {
         console.error("Element 'searchResult' nije pronađen.");
@@ -906,26 +906,44 @@ function displaySelectedItem(selectedItem, tableName) {
 
 		// Kreiranje novog reda (tr)
 		const row = document.createElement('tr');
+		row.style.position = 'relative';
 
 		// 1. Redni broj (baziran na broju trenutnih redova u tabeli)
 		const rowIndex = tableBody.rows.length + 1;
 		const tdIndex = document.createElement('td');
-		tdIndex.textContent = rowIndex; // Redni broj (od 1 pa naviše)
-		tdIndex.style.textAlign = 'center';
-		row.appendChild(tdIndex);
+		const tdIndexDiv = document.createElement('div');
+		tdIndexDiv.style.textAlign = 'center';
+		tdIndexDiv.style.display = 'flex';
+		tdIndexDiv.style.flexDirection = 'column';
+		tdIndexDiv.style.justifyContent = 'center';
+		tdIndexDiv.style.alignItems = 'center';
+		// Dodavanje rednog broja
+		const indexP = document.createElement('p');
+		indexP.textContent = rowIndex; // Redni broj (od 1 pa naviše)
+		tdIndexDiv.appendChild(indexP);
+		// Dodavanje ikonice za brisanje reda
+		const btnDelete = document.createElement('button');
+		btnDelete.classList.add("btnDelete");
+		btnDelete.classList.add(`btn-${rowIndex}`);
+		btnDelete.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
 
+		// Dodavanje funkcionalnosti za brisanje
+		btnDelete.addEventListener('click', () => {
+			row.remove(); // Brisanje trenutnog reda
+			renumberRows(); // Poziv funkcije za ponovno numerisanje
+			calculateItems();
+			calculateSumm()
+		});
+
+		tdIndexDiv.appendChild(btnDelete);
+		tdIndex.appendChild(tdIndexDiv);
+		row.appendChild(tdIndex);
+		
 		// 2. Šifra proizvoda (code)
 		const tdCode = document.createElement('td');
 		tdCode.textContent = selectedItem.code;
 		tdCode.style.textAlign = 'center';
 		row.appendChild(tdCode);
-
-		// // 3. Naziv koji kombinuje proizvođača, ime i model
-		// const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
-		// const tdCombined = document.createElement('td');
-		// tdCombined.textContent = combinedString;
-		// tdCombined.style.textAlign = 'left';
-		// row.appendChild(tdCombined);
 
 		// 3. Naziv koji kombinuje proizvođača, ime i model, sa tabelom unutar ćelije
 		const tdCombined = document.createElement('td');
@@ -936,29 +954,33 @@ function displaySelectedItem(selectedItem, tableName) {
 
 		// Stilizacija interne tabele da se uklopi unutar ćelije
 		tableInsideTd.style.width = '100%';
+		tableInsideTd.classList.add("secondary-table");
+		tableInsideTd.style.fontSize = '7pt';
 
 		// Kreiranje prvog reda tabele za sliku i naziv proizvoda
 		const row1 = document.createElement('tr');
-
-		// Prva ćelija prvog reda - za sliku proizvoda, koja se proteže kroz dva reda
-		const cellImage = document.createElement('td');
-		cellImage.rowSpan = 2; // Postavlja da se proteže kroz oba reda
-		cellImage.style.textAlign = 'center'; // Središnji poravnavanje slike
-		cellImage.style.width = '100px'; // Opcionalno, možeš postaviti širinu za ćeliju
-		const productImage = document.createElement('img');
-		productImage.src = `http://simaks/img/products/${selectedItem.img_url}`; // Postavi URL slike proizvoda
-		productImage.alt = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
-		productImage.style.maxWidth = '64px'; // Ograničenje maksimalne širine
-		productImage.style.height = 'auto'; // Održavanje proporcija slike
-		cellImage.appendChild(productImage);
-		row1.appendChild(cellImage);
 
 		// Druga ćelija prvog reda - kombinovani naziv proizvoda (proizvođač, naziv, model)
 		const cellCombinedName = document.createElement('td');
 		cellCombinedName.style.textAlign = 'left';
 		const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
 		cellCombinedName.textContent = combinedString;
+		cellCombinedName.style.fontWeight = "600";
+		cellCombinedName.style.textTransform = "uppercase";
 		row1.appendChild(cellCombinedName);
+		if(document.getElementById('checkImage').checked == true){
+			// Prva ćelija prvog reda - za sliku proizvoda
+			const cellImage = document.createElement('td');
+			cellImage.style.textAlign = 'center'; // Središnji poravnavanje slike
+			cellImage.style.width = '32px'; // Opcionalno, možeš postaviti širinu za ćeliju
+			const productImage = document.createElement('img');
+			productImage.src = `http://simaks/img/products/${selectedItem.img_url}`; // Postavi URL slike proizvoda
+			productImage.alt = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
+			productImage.style.maxWidth = '32px'; // Ograničenje maksimalne širine
+			productImage.style.height = 'auto'; // Održavanje proporcija slike
+			cellImage.appendChild(productImage);
+			row1.appendChild(cellImage);			
+		}
 
 		// Dodavanje prvog reda u internu tabelu
 		tableInsideTd.appendChild(row1);
@@ -968,6 +990,9 @@ function displaySelectedItem(selectedItem, tableName) {
 
 		// Druga ćelija drugog reda - opis proizvoda
 		const cellDescription = document.createElement('td');
+		if(document.getElementById('checkImage').checked == true){
+			cellDescription.colSpan = 2;
+		}
 		cellDescription.style.textAlign = 'left';
 		cellDescription.textContent = selectedItem.description; // Postavi opis proizvoda
 		row2.appendChild(cellDescription);
@@ -992,7 +1017,6 @@ function displaySelectedItem(selectedItem, tableName) {
 		tdKolicina.setAttribute('contenteditable', 'true');
 		tdKolicina.style.textAlign = 'center';
 		tdKolicina.setAttribute('cellName', `kolicina`);
-		tdKolicina.id = 'test';
 		tdKolicina.textContent = '1';
 		row.appendChild(tdKolicina);
 
@@ -1047,13 +1071,14 @@ function displaySelectedItem(selectedItem, tableName) {
 		tdUkupno.style.textAlign = 'center';
 		tdUkupno.setAttribute('cellName', `ukupno`);
 		row.appendChild(tdUkupno);
-
+		
 		// Dodavanje novog reda na kraj tbody-a
 		tableBody.appendChild(row);
 
-		calculateItems();
-		addListeners();
-		calculateSumm();
+
+		await calculateItems();
+		await calculateSumm();
+		await addListeners();
 
 	} else if (tableName === 'clients') {
         // Prikaz za tabelu 'clients'
@@ -1066,20 +1091,26 @@ function displaySelectedItem(selectedItem, tableName) {
 	}
 }
 
-function addListeners() {
-	// Event listeneri na sve editabilne celije u ponudi
-	const editableCells = document.querySelectorAll('#ponudaRow tbody td[contenteditable="true"]');
-	
-	editableCells.forEach(cell => {
-		cell.removeEventListener('input', () => {
-		});
-		// Dodavanje 'input' događaja na svaki <td>
-		cell.addEventListener('input', () => {
-			calculateItems();
-			calculateSumm();
-		});
-	});
-};
+async function addListeners() {
+    return new Promise((resolve) => {
+        // Event listeneri na sve editabilne celije u ponudi
+        const editableCells = document.querySelectorAll('#ponudaRow tbody td[contenteditable="true"]');
+        
+        editableCells.forEach(cell => {
+            // Uklanjanje prethodnih slušalaca
+            cell.removeEventListener('input', () => {});
+            
+            // Dodavanje 'input' događaja na svaki <td>
+            cell.addEventListener('input', () => {
+                calculateItems();
+                calculateSumm();
+            });
+        });
+
+        // Oznaka da je funkcija završena
+        resolve();
+    });
+}
 
 function formatNumber(number) {
 	// Proverite da li je prosleđeni broj validan
@@ -1108,103 +1139,114 @@ function parseFormattedNumber(formattedNumber) {
     return parseFloat(formattedNumber.replace(/\.(?=.*,)/g, '').replace(',', '.'));
 }
 
-function calculateItems() {
-	
-    // Selektujemo sve redove tabele, pretpostavljamo da tabela ima id "tabela-artikli"
-    const rows = document.querySelectorAll('#ponudaRow tbody tr');
+async function calculateItems() {
+    return new Promise((resolve) => {
+        // Selektujemo sve redove tabele
+        const rows = document.querySelectorAll('#ponudaRow tbody > tr');
 
-    rows.forEach(row => {
-        // Pronalaženje svih ćelija u trenutnom redu
-        const kolicinaCell = row.querySelector('[cellName="kolicina"]');
-        const cenaCell = row.querySelector('[cellName="cena"]');
-        const rabatCell = row.querySelector('[cellName="rabat"]');
-        const cenaRabatCell = row.querySelector('[cellName="cenarabat"]');
-        const iznosCell = row.querySelector('[cellName="iznos"]');
-        const pdvCell = row.querySelector('[cellName="pdv"]');
-        const cenaPdvCell = row.querySelector('[cellName="iznospdv"]');
-        const ukupnoCell = row.querySelector('[cellName="ukupno"]');
+        rows.forEach(row => {
+            // Pronalaženje svih ćelija u trenutnom redu
+            const kolicinaCell = row.querySelector('[cellName="kolicina"]');
+            const cenaCell = row.querySelector('[cellName="cena"]');
+            const rabatCell = row.querySelector('[cellName="rabat"]');
+            const cenaRabatCell = row.querySelector('[cellName="cenarabat"]');
+            const iznosCell = row.querySelector('[cellName="iznos"]');
+            const pdvCell = row.querySelector('[cellName="pdv"]');
+            const cenaPdvCell = row.querySelector('[cellName="iznospdv"]');
+            const ukupnoCell = row.querySelector('[cellName="ukupno"]');
 
-        // Parsiranje vrednosti iz ćelija
-        const kolicina = parseFloat(kolicinaCell.innerText) || 0;
-        const cena = parseFloat(parseFormattedNumber(cenaCell.innerText)) || 0;
-        const rabat = parseInt(rabatCell.innerText) || 0;
-        const pdv = parseInt(pdvCell.innerText) || 0;
+            // Parsiranje vrednosti iz ćelija			
+            const kolicina = parseFloat(kolicinaCell.innerText) || 0;
+            const cena = parseFloat(parseFormattedNumber(cenaCell.innerText)) || 0;
+            const rabat = parseInt(rabatCell.innerText) || 0;
+            const pdv = parseInt(pdvCell.innerText) || 0;
 
-        // Izračunavanje cene sa rabatom
-        const cenaSaRabatom = cena * (1 - rabat / 100);	
-        cenaRabatCell.innerText = cenaSaRabatom.toFixed(2);
+            // Izračunavanje cene sa rabatom
+            const cenaSaRabatom = cena * (1 - rabat / 100);	
+            cenaRabatCell.innerText = cenaSaRabatom.toFixed(2);
 
-        // Izračunavanje iznosa (količina * cena sa rabatom)
-        const iznos = kolicina * cenaSaRabatom;
-        iznosCell.innerText = iznos.toFixed(2);
+            // Izračunavanje iznosa (količina * cena sa rabatom)
+            const iznos = kolicina * cenaSaRabatom;
+            iznosCell.innerText = iznos.toFixed(2);
 
-        // Izračunavanje PDV-a (procenta od iznosa)
-        const iznosPdv = iznos * (pdv / 100);
-        cenaPdvCell.innerText = iznosPdv.toFixed(2);
+            // Izračunavanje PDV-a (procenta od iznosa)
+            const iznosPdv = iznos * (pdv / 100);
+            cenaPdvCell.innerText = iznosPdv.toFixed(2);
 
-        // Izračunavanje ukupne cene (iznos + PDV)
-        const ukupno = iznos + iznosPdv;
-        ukupnoCell.innerText = ukupno.toFixed(2);
+            // Izračunavanje ukupne cene (iznos + PDV)
+            const ukupno = iznos + iznosPdv;
+            ukupnoCell.innerText = ukupno.toFixed(2);
+        });
 
+        // Oznaka da je funkcija završena
+        resolve();
     });
 }
 
-function calculateSumm(){
-	// Izracunavanje sume za iznos kolonu
-	const colIznos = document.querySelectorAll('[cellName="iznos"]');
+async function calculateSumm(){
+
+	return new Promise((resolve) => {
+		// Izracunavanje sume za iznos kolonu
+		const colIznos = document.querySelectorAll('[cellName="iznos"]');
+		
+		let sumaIznos = 0;
+		colIznos.forEach(item => {
+			// let iznos = parseFormattedNumber(item.innerText);
+			sumaIznos += parseFloat(parseFormattedNumber(item.innerText));
+		});
+		document.getElementById('sumaIznos').textContent = formatNumber(sumaIznos);
 	
-	let sumaIznos = 0;
-	colIznos.forEach(item => {
-		// let iznos = parseFormattedNumber(item.innerText);
-		sumaIznos += parseFloat(parseFormattedNumber(item.innerText));
-	});
-	document.getElementById('sumaIznos').textContent = formatNumber(sumaIznos);
-
-	// Izracunavanje sume za iznos pdv-a kolonu
-	const colIznosPdv = document.querySelectorAll('[cellName="iznospdv"]');
+		// Izracunavanje sume za iznos pdv-a kolonu
+		const colIznosPdv = document.querySelectorAll('[cellName="iznospdv"]');
+		
+		let sumaIznosPdv = 0;
+		colIznosPdv.forEach(item => {
+			// let iznosPdv = parseFormattedNumber(item.innerText);
+			sumaIznosPdv += parseFloat(parseFormattedNumber(item.innerText));
+		});
+		document.getElementById('sumaPDV').textContent = formatNumber(sumaIznosPdv);
 	
-	let sumaIznosPdv = 0;
-	colIznosPdv.forEach(item => {
-		// let iznosPdv = parseFormattedNumber(item.innerText);
-		sumaIznosPdv += parseFloat(parseFormattedNumber(item.innerText));
-	});
-	document.getElementById('sumaPDV').textContent = formatNumber(sumaIznosPdv);
-
-	// Izracunavanje sume za ukupan iznos
-	const colUkupno = document.querySelectorAll('[cellName="ukupno"]');
+		// Izracunavanje sume za ukupan iznos
+		const colUkupno = document.querySelectorAll('[cellName="ukupno"]');
+		
+		let sumaUkupno = 0;
+		colUkupno.forEach(item => {
+			// let ukupno = parseFormattedNumber(item.innerText);
+			sumaUkupno += parseFloat(parseFormattedNumber(item.innerText));
+		});
+		document.getElementById('sumaUkupno').textContent = formatNumber(sumaUkupno);
 	
-	let sumaUkupno = 0;
-	colUkupno.forEach(item => {
-		// let ukupno = parseFormattedNumber(item.innerText);
-		sumaUkupno += parseFloat(parseFormattedNumber(item.innerText));
+		// Izracunavanje ukupne sume bez rabata i pdv-a
+		const finalUkupno = document.getElementById('finalUkupno');
+		const rows = document.querySelectorAll('#ponudaRow tbody > tr');
+		let kolicina = 0;
+		let cena = 0;
+		let sumaFinal = 0;
+		rows.forEach(row => {
+			kolicina = row.querySelector('[cellName="kolicina"]').innerText;
+			cena = row.querySelector('[cellName="cena"]').innerText;
+			sumaFinal += parseFloat(parseFormattedNumber(kolicina))*parseFloat(parseFormattedNumber(cena));
+		});
+		finalUkupno.textContent = formatNumber(sumaFinal);
+	
+		// Izracunavanje iznosa ukupnog rabata
+		const finalRabat = document.getElementById('finalRabat');
+		finalRabat.textContent = formatNumber(sumaFinal - sumaIznos);
+	
+		// Ispisivanje iznosa
+		document.getElementById('finalIznos').textContent = formatNumber(sumaIznos);
+	
+		// Ispisivanje PDV-a
+		document.getElementById('finalPDV').textContent = formatNumber(sumaIznosPdv);
+	
+		// Ispisivanje ukupnog iznosa za placanje
+		document.getElementById('finalPlacanje').textContent = formatNumber(sumaUkupno);
+
+		console.log('test');
+		
+
+		resolve();
 	});
-	document.getElementById('sumaUkupno').textContent = formatNumber(sumaUkupno);
-
-	// Izracunavanje ukupne sume bez rabata i pdv-a
-	const finalUkupno = document.getElementById('finalUkupno');
-	const rows = document.querySelectorAll('#ponudaRow tbody tr');
-	let kolicina = 0;
-	let cena = 0;
-	let sumaFinal = 0;
-	rows.forEach(row => {
-		kolicina = row.querySelector('[cellName="kolicina"]').innerText;
-		cena = row.querySelector('[cellName="cena"]').innerText;
-		sumaFinal += parseFloat(parseFormattedNumber(kolicina))*parseFloat(parseFormattedNumber(cena));
-	});
-	finalUkupno.textContent = formatNumber(sumaFinal);
-
-	// Izracunavanje iznosa ukupnog rabata
-	const finalRabat = document.getElementById('finalRabat');
-	finalRabat.textContent = formatNumber(sumaFinal - sumaIznos);
-
-	// Ispisivanje iznosa
-	document.getElementById('finalIznos').textContent = formatNumber(sumaIznos);
-
-	// Ispisivanje PDV-a
-	document.getElementById('finalPDV').textContent = formatNumber(sumaIznosPdv);
-
-	// Ispisivanje ukupnog iznosa za placanje
-	document.getElementById('finalPlacanje').textContent = formatNumber(sumaUkupno);
 }
 
 function dataFill(){
@@ -1257,5 +1299,107 @@ window.electronAPI.onPdfCreated((event, response) => {
         // Ovde možeš otvoriti ili preuzeti generisani PDF fajl
     } else {
         console.error('Greška prilikom kreiranja PDF-a:', response.message);
+    }
+});
+
+function renumberRows() {
+    const tableBody = document.querySelector('#ponudaRow tbody');
+    // Selektuj samo tr elemente koji su direktna deca tbody-a, a ne one koji su ugnježdeni
+    const rows = tableBody.querySelectorAll(':scope > tr');
+
+    rows.forEach((row, index) => {
+        // Selektuj prvu ćeliju u svakom redu koja sadrži redni broj
+        const tdIndex = row.querySelector('td:first-child div p');
+        if (tdIndex) {
+            tdIndex.textContent = index + 1; // Ažuriraj redni broj (1, 2, 3, itd.)
+        }
+
+        // Ažuriraj klasu dugmeta za brisanje da odgovara novom rednom broju
+        const btnDelete = row.querySelector('.btnDelete');
+        if (btnDelete) {
+            btnDelete.classList.remove(...btnDelete.classList);
+            btnDelete.classList.add('btnDelete', `btn-${index + 1}`);
+        }
+    });
+}
+
+document.getElementById("resetForm").addEventListener('click', () => {
+	// Resetovanje input polja
+	const formInputs = document.querySelectorAll('input, textarea, select');
+	formInputs.forEach(input => {
+		if (input.type === 'checkbox' || input.type === 'radio') {
+			input.checked = false; // Resetuj čekirane inpute
+		} else {
+			input.value = ''; // Resetuj sve tekstualne inpute, textarea i select
+		}
+	});
+	
+	// Brisanje svih redova iz tabele
+	const tableBody = document.querySelector('#ponudaRow tbody');
+	while (tableBody.firstChild) {
+		tableBody.removeChild(tableBody.firstChild);
+	}
+
+	// resetovanje polja za kupca
+	document.getElementById('nazivKupca').textContent = '';
+	document.getElementById('adresaKupca').textContent = '';
+	document.getElementById('mestoKupca').textContent = '';
+	document.getElementById('pibKupca').textContent = '';
+	document.getElementById('mbKupca').textContent = '';
+	
+	// Resetovanje prikaza sume (ako postoji)
+	document.getElementById('sumaIznos').textContent = '0,00';
+	document.getElementById('sumaPDV').textContent = '0,00';
+	document.getElementById('sumaUkupno').textContent = '0,00';
+	document.getElementById('finalUkupno').textContent = '0,00';
+	document.getElementById('finalRabat').textContent = '0,00';
+	document.getElementById('finalIznos').textContent = '0,00';
+	document.getElementById('finalPDV').textContent = '0,00';
+	document.getElementById('finalPlacanje').textContent = '0,00';
+	
+	dataFill();
+	fillUserData();
+	
+	// Prikaz poruke o uspešnom resetovanju (opciono)
+	Swal.fire({
+		title: 'Resetovano!',
+		text: 'Formular je uspešno resetovan.',
+		icon: 'success',
+		confirmButtonText: 'OK'
+	});
+});
+
+// JavaScript funkcionalnost za pomeranje separatora
+const divider = document.getElementById('divider');
+const leftPanel = document.getElementById('pagePreview');
+const rightPanel = divider.nextElementSibling;
+
+let isDragging = false;
+
+// Funkcija koja se poziva kada korisnik počne da vuče separator
+divider.addEventListener('mousedown', function (e) {
+    isDragging = true;
+    document.body.style.cursor = 'col-resize';
+});
+
+// Kada korisnik pomera miša
+document.addEventListener('mousemove', function (e) {
+    if (!isDragging) return;
+
+    // Dobijanje novih širina za leve i desne panele na osnovu trenutne pozicije miša
+    const containerWidth = divider.parentElement.offsetWidth;
+    const leftWidth = (e.clientX / containerWidth) * 100;
+    const rightWidth = 100 - leftWidth;
+
+    // Ažuriraj širinu panela
+    leftPanel.style.width = `${leftWidth}%`;
+    rightPanel.style.width = `${rightWidth}%`;
+});
+
+// Kada korisnik pusti miša (prestane da vuče)
+document.addEventListener('mouseup', function () {
+    if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = 'default';
     }
 });

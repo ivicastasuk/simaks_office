@@ -322,6 +322,7 @@
 				<!-- Tab: Rad sa ponudama -->
 				<div id="content5" class="w-full h-main hidden flex-row justify-start items-start">
 					<div id="pagePreview" class="w-1/2 h-view p-4 overflow-auto flex justify-center items-start"></div>
+					<div id="divider" class="divider h-view m-0"></div>
 					<div class="w-1/2 h-view p-4 flex flex-col justify-start items-start gap-4">
 						<div class="w-full flex flex-col justify-start items-start gap-4">
 							<div class="w-full flex justify-start items-center gap-4">
@@ -338,8 +339,13 @@
 									<div id="dropdownList" class="dropdown-box absolute top-8 left-0 p-2 border border-solid w-full z-10"></div>
 								</div>
 							</div>
-							<div class="w-full flex justify-end items-center">
-								<button id="createPdf" class="p-2 btn btn-primary">KREIRAJ PONUDU</button>
+							<div class="w-full flex justify-start items-center gap-4">
+								<label for="checkImage">Prikaži sliku u ponudi:</label>
+								<input type="checkbox" name="checkImage" id="checkImage" class="checkbox-standard">
+							</div>
+							<div class="w-full flex justify-end items-center gap-4">
+								<button id="resetForm" class="p-2 btn btn-primary btn-alert">RESETUJ PONUDU</button>
+								<button id="createPdf" class="p-2 btn btn-primary text-white">KREIRAJ PONUDU</button>
 							</div>
 							<div class="w-full">
 								<table id="searchResult" class="w-full"></table>

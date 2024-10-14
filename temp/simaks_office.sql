@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Oct 09, 2024 at 09:06 PM
--- Server version: 11.1.2-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: Oct 14, 2024 at 11:46 AM
+-- Server version: 11.2.2-MariaDB
+-- PHP Version: 8.2.13
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `clients` (
   `pib` int(9) NOT NULL,
   `mb` int(8) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
 -- Dumping data for table `clients`
@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS `clients` (
 
 INSERT INTO `clients` (`id`, `name`, `address`, `city`, `pib`, `mb`) VALUES
 (1, 'Simaks doo', 'Pere Popadića 3', 'Novi Sad', 108480120, 21008001),
-(2, 'LirideNET', 'Industrijska 1A', 'Novi Sad', 100200300, 10200500);
+(2, 'LirideNET', 'Industrijska 1A', 'Novi Sad', 100200300, 10200500),
+(3, 'Clima Tech Design', 'Trg Marije Trandafil 7', 'Novi Sad', 111194577, 21439819);
 
 -- --------------------------------------------------------
 
@@ -136,6 +137,8 @@ CREATE TABLE IF NOT EXISTS `settings` (
   `company` varchar(256) NOT NULL,
   `address` varchar(256) NOT NULL,
   `city` varchar(64) NOT NULL,
+  `zip` int(5) NOT NULL,
+  `country` varchar(64) NOT NULL,
   `pib` int(9) NOT NULL,
   `mb` int(8) NOT NULL,
   `phone` varchar(16) NOT NULL,
@@ -148,8 +151,8 @@ CREATE TABLE IF NOT EXISTS `settings` (
 -- Dumping data for table `settings`
 --
 
-INSERT INTO `settings` (`id`, `company`, `address`, `city`, `pib`, `mb`, `phone`, `website`, `logo`) VALUES
-(1, 'Simaks d.o.o.', 'Pere Popadića 3', 'Novi Sad', 108480120, 21008001, '+381-21-410800', 'https://www.nestiqdesign.com', '');
+INSERT INTO `settings` (`id`, `company`, `address`, `city`, `zip`, `country`, `pib`, `mb`, `phone`, `website`, `logo`) VALUES
+(1, 'Simaks d.o.o.', 'Pere Popadića 3', 'Novi Sad', 0, '', 108480120, 21008001, '+381 21 410800', 'https://www.nestiqdesign.com', '');
 
 -- --------------------------------------------------------
 
@@ -177,7 +180,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `phone`, `is_logged`, `company_id`, `token`) VALUES
-(1, 'ivica', '$2y$10$zpr2JP9EKWKH6mMX7MK0y.mBGpsHPiQyI2KVw2my0cg1n4QO8ITlO', 'Ivica', 'Stašuk', 'stasuk.ivica@gmail.com', '+381-69-718229', 1, 1, 'be311665c301c943e0b5710db1a8ec00');
+(1, 'ivica', '$2y$10$zpr2JP9EKWKH6mMX7MK0y.mBGpsHPiQyI2KVw2my0cg1n4QO8ITlO', 'Ivica', 'Stašuk', 'stasuk.ivica@gmail.com', '+381 69 718229', 1, 1, '1f138757d811bb9b0cfe26b6458fa79a');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

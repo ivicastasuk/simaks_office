@@ -43,7 +43,7 @@ $searchQuery = '%' . $query . '%';
 
 // Dynamic SQL statement based on table
 if ($table === 'products') {
-    $stmt = $conn->prepare("SELECT id, code, name, model, price, type, manufacturer, description, items, unit FROM products WHERE code COLLATE utf8mb4_general_ci LIKE ? OR name COLLATE utf8mb4_general_ci LIKE ? OR model COLLATE utf8mb4_general_ci LIKE ?");
+    $stmt = $conn->prepare("SELECT id, code, name, model, img_url, price, type, manufacturer, description, items, unit FROM products WHERE code COLLATE utf8mb4_general_ci LIKE ? OR name COLLATE utf8mb4_general_ci LIKE ? OR model COLLATE utf8mb4_general_ci LIKE ?");
 } else if ($table === 'clients') {
     $stmt = $conn->prepare("SELECT id, name, address, city, pib, mb FROM clients WHERE name COLLATE utf8mb4_general_ci LIKE ? OR city COLLATE utf8mb4_general_ci LIKE ? OR pib COLLATE utf8mb4_general_ci LIKE ?");
 }

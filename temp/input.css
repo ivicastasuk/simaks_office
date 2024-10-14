@@ -7,15 +7,29 @@
     * {
         box-sizing: border-box;
     }
+
+    .divider {
+        width: 3px;
+        background-color: #ccc;
+        cursor: col-resize;
+        position: relative;
+    }
 }
 
 @layer components {
+    .btn-alert {
+        @apply bg-red-700 text-white border-red-700 hover:bg-red-800 hover:border-red-800;
+    }
     .menu-item {
         @apply text-base hover:bg-primary cursor-pointer;
     }
 
     .input-standard {
         @apply border-b px-2 py-1 text-right bg-transparent;
+    }
+
+    .checkbox-standard {
+        @apply border border-solid rounded h-6 w-6;
     }
 
     .input-search {

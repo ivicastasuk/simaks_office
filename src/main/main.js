@@ -157,6 +157,9 @@ ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
                 * {
                     outline: none !important;
                 }
+                .btnDelete {
+                    display: none;
+                }
             `,
         });
 
