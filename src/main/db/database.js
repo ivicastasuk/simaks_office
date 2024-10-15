@@ -21,13 +21,13 @@ async function connect() {
     }
 }
 
-// funkcija za azuriranje podataka u bazi
+// Funkcija za azuriranje podataka u bazi
 async function updateData(tableName, data, conditionString, conditionValues) {
     let connection;
     try {
         connection = await connect();
 
-        // Validate input parameters
+        // Validacija unesenih parametara
         if (!tableName || typeof tableName !== 'string') {
             throw new Error('Invalid table name');
         }
@@ -41,19 +41,18 @@ async function updateData(tableName, data, conditionString, conditionValues) {
             throw new Error('Condition values must be an array');
         }
 
-        // Prepare the SET clause
         const keys = Object.keys(data);
         const values = Object.values(data);
 
         const setClause = keys.map(key => `\`${key}\` = ?`).join(', ');
 
-        // Combine values for the query
+        // Kombinovanje vrednosti za upit
         const queryValues = [ ...values, ...conditionValues ];
 
-        // Construct the SQL query
+        // Kreiranje SQL upita
         const query = `UPDATE \`${tableName}\` SET ${setClause} WHERE ${conditionString}`;
 
-        // Execute the query
+        // Izvrsavanje upita
         const [ result ] = await connection.execute(query, queryValues);
         return result;
     } catch (error) {
@@ -161,46 +160,8 @@ async function deleteData(tableName, conditionString, conditionValues) {
     }
 }
 
-// Uzimanje broja ponude iz baze
-async function getNextOfferNumber() {
-    let connection;
-    try {
-        connection = await connect();
-
-        const currentYear = new Date().getFullYear();
-        let query = 'SELECT * FROM offer_numbers WHERE godina = ?';
-        let [rows] = await connection.execute(query, [currentYear]);
-
-        if (rows.length > 0) {
-            // Postoji zapis za tekuću godinu
-            let currentNumber = rows[0].broj + 1;
-
-            // Ažuriraj broj u bazi
-            query = 'UPDATE offer_numbers SET broj = ? WHERE godina = ?';
-            await connection.execute(query, [currentNumber, currentYear]);
-
-            return { godina: currentYear, broj: currentNumber };
-        } else {
-            // Ne postoji zapis za tekuću godinu, kreiraj novi
-            let currentNumber = 1;
-
-            query = 'INSERT INTO offer_numbers (godina, broj) VALUES (?, ?)';
-            await connection.execute(query, [currentYear, currentNumber]);
-
-            return { godina: currentYear, broj: currentNumber };
-        }
-    } catch (error) {
-        console.error('Error getting next offer number:', error);
-        throw error;
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
-    }
-}
 
 // Funkcija za dobijanje potencijalnog sledećeg broja ponude
-// Function to get the next potential offer number without reserving it
 async function getPotentialOfferNumber() {
     let connection;
     try {
@@ -224,7 +185,7 @@ async function getPotentialOfferNumber() {
     }
 }
 
-// Function to reserve the offer number when creating the offer
+// Funkcija za rezervisanje broja ponude
 async function reserveOfferNumber(expectedNumber) {
     let connection;
     try {
@@ -232,10 +193,9 @@ async function reserveOfferNumber(expectedNumber) {
 
         const currentYear = new Date().getFullYear();
 
-        // Start transaction
         await connection.beginTransaction();
 
-        // Lock the table to prevent concurrent modifications
+        // Zakljucavanje reda za unos
         let query = 'SELECT MAX(broj) as maxBroj FROM offer_numbers WHERE godina = ? FOR UPDATE';
         let [rows] = await connection.execute(query, [currentYear]);
 
@@ -245,20 +205,17 @@ async function reserveOfferNumber(expectedNumber) {
         let finalNumber;
 
         if (nextNumber === expectedNumber) {
-            // We can use the expected number
             finalNumber = expectedNumber;
         } else {
-            // Another offer was created in the meantime; use the next available number
             finalNumber = nextNumber;
         }
 
-        // Update or insert the new number in offer_numbers
         if (maxBroj) {
-            // Update existing record
+            // Rezervacija novog broja u godini
             query = 'UPDATE offer_numbers SET broj = ? WHERE godina = ?';
             await connection.execute(query, [finalNumber, currentYear]);
         } else {
-            // Ubaci novi podatak u godinu
+            // Ubacivanje novog broja u godinu
             query = 'INSERT INTO offer_numbers (godina, broj) VALUES (?, ?)';
             await connection.execute(query, [currentYear, finalNumber]);
         }
@@ -285,12 +242,9 @@ async function saveOfferToDatabase(offerData) {
     try {
         connection = await connect();
 
-        // Start transaction
         await connection.beginTransaction();
 
-        console.log('offerData:', offerData);
-
-        // Insert into offers table
+        // Ubacivanje podataka u tabelu "offers"
         const offerQuery = `
             INSERT INTO offers (
                 offer_number, offer_year, client_name, client_address, client_city, client_pib, client_mb,
@@ -313,7 +267,7 @@ async function saveOfferToDatabase(offerData) {
         const [offerResult] = await connection.execute(offerQuery, offerValues);
         const offerId = offerResult.insertId;
 
-        // Insert items into offer_items table
+        // Ubacivanje stavki u tabelu "offer_items"
         const itemQuery = `
             INSERT INTO offer_items (
                 offer_id, code, description, unit, quantity, price, discount, price_with_discount, amount, vat_percent, vat_amount, total
@@ -339,12 +293,10 @@ async function saveOfferToDatabase(offerData) {
             await connection.execute(itemQuery, itemValues);
         }
 
-        // Commit transaction
         await connection.commit();
 
         return { success: true, offerId };
     } catch (error) {
-        // Rollback transaction in case of error
         if (connection) {
             await connection.rollback();
         }
@@ -358,4 +310,4 @@ async function saveOfferToDatabase(offerData) {
 }
 
 // export default
-module.exports = { connect, fetchData, insertData, updateData, deleteData, getNextOfferNumber, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase };
+module.exports = { connect, fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase };

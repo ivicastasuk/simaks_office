@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     unmaximizeWindow: () => ipcRenderer.send('unmaximize-window'),
     createPdf: (htmlContent) => ipcRenderer.send('create-pdf', htmlContent),
     onPdfCreated: (callback) => ipcRenderer.on('pdf-created', (event, response) => callback(event, response)),
-    getNextOfferNumber: () => ipcRenderer.invoke('get-next-offer-number'),
+    // getNextOfferNumber: () => ipcRenderer.invoke('get-next-offer-number'),
     getPotentialOfferNumber: () => ipcRenderer.invoke('get-potential-offer-number'),
     reserveOfferNumber: (expectedNumber) => ipcRenderer.invoke('reserve-offer-number', expectedNumber),
     saveOffer: (offerData) => ipcRenderer.invoke('save-offer', offerData),

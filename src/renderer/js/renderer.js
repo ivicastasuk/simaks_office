@@ -40,7 +40,7 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
 	}
 
 	try {
-		// Send login request to the server
+		// Slanje zahteva za login na server
 		const response = await fetch('http://simaks/api/login.php', {
 			method: 'POST',
 			headers: {
@@ -53,7 +53,6 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
 
 		if (response.ok && result.success) {
 			// console.log('Login successful:', result);
-			// Store the token and user data
 			window.authToken = result.token;
 			window.currentUser = result.user;
 
@@ -185,7 +184,7 @@ window.electronAPI.onCompanyUpdated((result) => {
 	});
 });
 
-// Listen for the 'settings-fetched' event
+// Osluskivanje 'settings-fetched' dogadjaja
 window.electronAPI.onSettingsFetched((settingsData) => {
 	if (settingsData.length > 0) {
 		// Pretpostavljamo da postoji samo jedan red sa podešavanjima za svaku kompaniju
@@ -396,7 +395,6 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 		const manufacturer = document.querySelector("input[name=manufacturer]").value;
 		const name = document.querySelector("input[name=name]").value;
 		const model = document.querySelector("input[name=model]").value;
-		// Use the uploaded image name or a default value
 		const image = window.uploadedImageName || "dummy.jpg";
 		const description = document.querySelector("textarea[name=description]").value;
 		// const items = document.querySelector("input[name=items]").value;
@@ -645,7 +643,7 @@ function previewImage() {
 	reader.readAsDataURL(file);
 }
 
-// Function to handle image upload
+// Funkcija za rukovanje slikom
 async function uploadImage(file) {
 	const formData = new FormData();
 	formData.append('image', file);
@@ -660,9 +658,9 @@ async function uploadImage(file) {
 
 		if (response.ok && result.success) {
 			console.log('Image uploaded successfully:', result);
-			// Update the image preview
+			// Azuriranje previewa za sliku
 			document.getElementById('imagePreview').src = URL.createObjectURL(file);
-			return result.filename; // Return the image file name from the server response
+			return result.filename; 
 		} else {
 			console.error('Error uploading image:', result.message);
 			Swal.fire({
@@ -685,18 +683,18 @@ async function uploadImage(file) {
 	}
 }
 
-// Event listener for image input change
+// Event listener za izbor slike u input polju
 document.getElementById('imgInput').addEventListener('change', async function (event) {
 	const file = event.target.files[ 0 ];
 	if (!file) {
 		return;
 	}
 
-	// Upload the image to the server
+	// Upload slike na server
 	const imageName = await uploadImage(file);
 
 	if (imageName) {
-		// Store the image name for later use
+		// Skladistenje naziva slike za kasniju upotrebu
 		window.uploadedImageName = imageName;
 	}
 });
@@ -729,7 +727,6 @@ function showToast() {
 
 // Funkcija za prikazivanje podataka o korisniku
 function displayUserProfile(user) {
-	// Reference to the profile container
 	const profileContainer = document.getElementById('content1');
 
 	document.querySelector('input[name=userUsername]').value = '';
@@ -746,7 +743,6 @@ function displayUserProfile(user) {
 	document.querySelector('input[name=userEmail]').value = user.email;
 	document.querySelector('input[name=userPhone]').value = user.phone;
 
-	// Make content1 visible
 	profileContainer.classList.remove('hidden');
 	profileContainer.classList.add('flex');
 }
@@ -810,18 +806,18 @@ async function importTemplate(template) {
 createDropdownSearch('searchInput', 'dropdownList', 'products', ['code', 'name', 'model', 'price']);
 createDropdownSearch('clientSelect', 'dropdownClients', 'clients', ['name', 'city', 'pib']);
 
-// Generalized function for fetching data and displaying dropdown results
+// Funkcija za povlacenje podataka i pravljenje dropdown liste
 async function createDropdownSearch(inputId, dropdownId, tableName, displayColumns) {
     const searchInput = document.getElementById(inputId);
     const dropdownList = document.getElementById(dropdownId);
 
-    let activeIndex = -1; // Currently active index for navigating dropdown
-    let dropdownItems = []; // All dropdown items with complete data
+    let activeIndex = -1;
+    let dropdownItems = [];
 
     searchInput.addEventListener('input', async () => {
         const query = searchInput.value.trim();
 
-        // Hide dropdown if there's no query
+        // Sakrij dropdown ako nema upita
         if (query.length === 0) {
             dropdownList.innerHTML = '';
             dropdownList.style.display = 'none';
@@ -829,11 +825,11 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
         }
 
         try {
-            // Sending GET request to PHP backend for search
+            // Slanje upita API-ju
             const response = await fetch(`http://simaks/api/search.php?q=${encodeURIComponent(query)}&table=${tableName}`);
             const results = await response.json();
 
-            // Display results in the dropdown list
+            // Prikazivanje sadrzaja u dropdown listi
             if (results.length > 0) {
                 dropdownList.innerHTML = '';
                 dropdownItems = results;
@@ -842,16 +838,16 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
                     const item = document.createElement('div');
                     item.classList.add('dropdown-item');
                     
-                    // Dynamically create the content for the dropdown item
+                    // Dinamicko kreiranje sadrzaja za dropdown listu
                     item.textContent = displayColumns.map(col => result[col]).join(' - ');
                     item.setAttribute('data-index', index);
 
-                    // Add event listener for click on the item
+                    // Event listener za klik misem na oznacenu stavku
                     item.addEventListener('click', () => {
                         selectResult(result, searchInput, dropdownId, tableName);
                     });
 
-                    // Add event listener for mouse enter to highlight item
+                    // Event listener za ulazak misa u oznacenu stavku
                     item.addEventListener('mouseenter', () => {
                         activeIndex = index;
                         highlightItem(dropdownList, activeIndex);
@@ -860,7 +856,7 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
                     dropdownList.appendChild(item);
                 });
                 dropdownList.style.display = 'block';
-                activeIndex = -1; // Reset active index
+                activeIndex = -1; // Resetuj aktivni index
             } else {
                 dropdownList.innerHTML = '<div class="dropdown-item">Nema rezultata</div>';
                 dropdownList.style.display = 'block';
@@ -871,14 +867,14 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
         }
     });
 
-    // Event listener for losing focus on input field
+    // Event listener za gubljenje fokusa na input polju
     searchInput.addEventListener('blur', () => {
         setTimeout(() => {
             dropdownList.style.display = 'none';
         }, 200);
     });
 
-    // Event listener for keyboard navigation through dropdown
+    // Event listener za navigaciju preko tastature
     searchInput.addEventListener('keydown', (event) => {
         if (dropdownItems.length === 0) {
             return;
@@ -912,7 +908,7 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
     });
 }
 
-// Function for highlighting the current item in dropdown
+// Funkcija za oznacavanje izabrane stavke
 function highlightItem(dropdownList, activeIndex) {
     Array.from(dropdownList.children).forEach((item, index) => {
         if (index === activeIndex) {
@@ -924,7 +920,7 @@ function highlightItem(dropdownList, activeIndex) {
     });
 }
 
-// Function for selecting a result from dropdown
+// Funkcija za selektovanje izbora u dropdownu
 function selectResult(result, searchInput, dropdownId, tableName) {
     const dropdownList = document.getElementById(dropdownId);
 
@@ -942,7 +938,7 @@ function selectResult(result, searchInput, dropdownId, tableName) {
     displaySelectedItem(result, tableName);
 }
 
-// Example function for displaying the selected item in a custom way
+// Funkcija za prikazivanje selektovanog artikla - ubacivanje u templejt ponude
 async function displaySelectedItem(selectedItem, tableName) {
     const displayContainer = document.getElementById('searchResult');
     if (!displayContainer) {
@@ -952,7 +948,6 @@ async function displaySelectedItem(selectedItem, tableName) {
 
     if (tableName === 'products') {
 		// Prikaz za tabelu 'products'
-		// Referenca na telo tabele
 		const tableBody = document.querySelector('#ponudaRow tbody');
 		if (!tableBody) {
 			console.error("Element 'ponudaRow tbody' nije pronađen.");
@@ -1246,7 +1241,6 @@ async function calculateItems() {
             ukupnoCell.innerText = ukupno.toFixed(2);
         });
 
-        // Oznaka da je funkcija završena
         resolve();
     });
 }
@@ -1259,7 +1253,6 @@ async function calculateSumm(){
 		
 		let sumaIznos = 0;
 		colIznos.forEach(item => {
-			// let iznos = parseFormattedNumber(item.innerText);
 			sumaIznos += parseFloat(parseFormattedNumber(item.innerText));
 		});
 		document.getElementById('sumaIznos').textContent = formatNumber(sumaIznos);
@@ -1269,7 +1262,6 @@ async function calculateSumm(){
 		
 		let sumaIznosPdv = 0;
 		colIznosPdv.forEach(item => {
-			// let iznosPdv = parseFormattedNumber(item.innerText);
 			sumaIznosPdv += parseFloat(parseFormattedNumber(item.innerText));
 		});
 		document.getElementById('sumaPDV').textContent = formatNumber(sumaIznosPdv);
@@ -1279,7 +1271,6 @@ async function calculateSumm(){
 		
 		let sumaUkupno = 0;
 		colUkupno.forEach(item => {
-			// let ukupno = parseFormattedNumber(item.innerText);
 			sumaUkupno += parseFloat(parseFormattedNumber(item.innerText));
 		});
 		document.getElementById('sumaUkupno').textContent = formatNumber(sumaUkupno);
@@ -1322,7 +1313,7 @@ function dataFill(){
 	document.getElementById('companyPIB').textContent = companyData.pib;
 	document.getElementById('companyMB').textContent = companyData.mb;
 
-	// formatiranje i prikazivanje datuma
+	// Formatiranje i prikazivanje datuma
 	const danasnjiDatum = new Date();
     const dan = String(danasnjiDatum.getDate()).padStart(2, '0');
     const mesec = String(danasnjiDatum.getMonth() + 1).padStart(2, '0');
@@ -1438,10 +1429,9 @@ async function saveOfferData(offerData) {
         totalVAT,
         totalWithVAT,
         items,
-        // dodati ostale kolone ako je potrebno
+        // Dodati ostale kolone ako je potrebno
     };
 
-    // Poziv preko `electronAPI`
     await window.electronAPI.saveOffer(data);
 }
 
@@ -1449,7 +1439,6 @@ async function saveOfferData(offerData) {
 window.electronAPI.onPdfCreated((event, response) => {
     if (response.success) {
         console.log('PDF je uspešno kreiran:', response.path);
-        // Ovde možeš otvoriti ili preuzeti generisani PDF fajl
     } else {
         console.error('Greška prilikom kreiranja PDF-a:', response.message);
     }
@@ -1464,7 +1453,7 @@ function renumberRows() {
         // Selektuj prvu ćeliju u svakom redu koja sadrži redni broj
         const tdIndex = row.querySelector('td:first-child div p');
         if (tdIndex) {
-            tdIndex.textContent = index + 1; // Ažuriraj redni broj (1, 2, 3, itd.)
+            tdIndex.textContent = index + 1; // Ažuriraj redni broj
         }
 
         // Ažuriraj klasu dugmeta za brisanje da odgovara novom rednom broju
@@ -1493,7 +1482,7 @@ document.getElementById("resetForm").addEventListener('click', () => {
 		tableBody.removeChild(tableBody.firstChild);
 	}
 
-	// resetovanje polja za kupca
+	// Resetovanje polja za kupca
 	document.getElementById('nazivKupca').textContent = '';
 	document.getElementById('adresaKupca').textContent = '';
 	document.getElementById('mestoKupca').textContent = '';
@@ -1514,7 +1503,7 @@ document.getElementById("resetForm").addEventListener('click', () => {
 	fillUserData();
 	setPotentialOfferNumber();
 	
-	// Prikaz poruke o uspešnom resetovanju (opciono)
+	// Prikaz poruke o uspešnom resetovanju
 	Swal.fire({
 		title: 'Resetovano!',
 		text: 'Formular je uspešno resetovan.',
@@ -1557,31 +1546,6 @@ document.addEventListener('mouseup', function () {
         document.body.style.cursor = 'default';
     }
 });
-
-// Funkcija za broj ponude
-async function setOfferNumber() {
-    try {
-        const offerData = await window.electronAPI.getNextOfferNumber();
-
-        // Ekstrakcija poslednje dve cifre godine
-        const yearString = offerData.godina.toString().slice(-2);
-
-        // Broj ponude sa vodećim nulama
-        const offerNumberString = offerData.broj.toString().padStart(3, '0');
-
-        // Postavljanje vrednosti u HTML
-        document.getElementById('ponudaGodina').textContent = yearString;
-        document.getElementById('ponudaBroj').textContent = offerNumberString;
-    } catch (error) {
-        console.error('Error setting offer number:', error);
-        Swal.fire({
-            title: 'Greška',
-            text: 'Došlo je do greške prilikom generisanja broja ponude.',
-            icon: 'error',
-            confirmButtonText: 'OK',
-        });
-    }
-}
 
 // Funkcija za postavljanje potencijalnog broja ponude
 async function setPotentialOfferNumber() {

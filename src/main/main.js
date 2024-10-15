@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { join } = require('path');
-const { fetchData, insertData, updateData, deleteData, getNextOfferNumber, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase } = require('./db/database.js');
+const { fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase } = require('./db/database.js');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const path = require('path');
@@ -206,15 +206,15 @@ ipcMain.on('delete-data', async (event, { tableName, conditionString, conditionV
     }
 });
 
-ipcMain.handle('get-next-offer-number', async () => {
-    try {
-        const result = await getNextOfferNumber();
-        return result;
-    } catch (error) {
-        console.error('Error getting next offer number:', error);
-        throw error;
-    }
-});
+// ipcMain.handle('get-next-offer-number', async () => {
+//     try {
+//         const result = await getNextOfferNumber();
+//         return result;
+//     } catch (error) {
+//         console.error('Error getting next offer number:', error);
+//         throw error;
+//     }
+// });
 
 ipcMain.handle('get-potential-offer-number', async () => {
     try {
