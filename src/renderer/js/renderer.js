@@ -74,6 +74,7 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
 					displayCompanySettings();
 					await importTemplate('ponuda');
 					fillUserData();
+					await setPotentialOfferNumber();
 				} catch (error) {
 					console.error('An error occurred:', error);
 				}
@@ -287,6 +288,17 @@ window.electronAPI.onDataFetched((data) => {
 		tdPrice.setAttribute('class', 'text-right');
 		tr.appendChild(tdPrice);
 
+		// Kreiranje dugmeta za brisanje
+		const tdActions = document.createElement('td');
+		const deleteButton = document.createElement('button');
+		deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+		deleteButton.addEventListener('click', () => {
+			// Pozivanje funkcije za brisanje
+			deleteRow('products', row.id);
+		});
+		tdActions.appendChild(deleteButton);
+		tr.appendChild(tdActions);
+
 		// Dodavanje reda u telo tabele
 		tbody.appendChild(tr);
 	});
@@ -354,6 +366,17 @@ window.electronAPI.onClientsFetched((data) => {
 		tdMB.textContent = row.mb;
 		tr.appendChild(tdMB);
 
+		// Brisanje klijenta iz baze
+		const tdActions = document.createElement('td');
+		const deleteButton = document.createElement('button');
+		deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+		deleteButton.addEventListener('click', () => {
+			// Pozivanje funkcije za brisanje
+			deleteRow('clients', row.id);
+		});
+		tdActions.appendChild(deleteButton);
+		tr.appendChild(tdActions);
+
 		// Dodavanje reda u telo tabele
 		tbody.appendChild(tr);
 	});
@@ -380,10 +403,10 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 		const unit = document.querySelector("select[name=units]").value;
 		const price = document.querySelector("input[name=price]").value;
 
-		if (!code || !name || !model) {
+		if (!code || !model) {
 			Swal.fire({
 				title: 'Greška',
-				text: 'Popunite sva obavezna polja...',
+				text: 'Polja ŠIFRA i OZNAKA su obavezni...',
 				icon: 'error',
 				confirmButtonText: 'OK'
 			});
@@ -471,6 +494,51 @@ document.querySelectorAll('button[name=insertClient]').forEach((button, index) =
 		}
 	});
 });
+
+// Brisanje podataka iz baze
+function deleteRow(tableName, id) {
+    // Prikazivanje potvrde pre brisanja
+    Swal.fire({
+        title: 'Da li ste sigurni?',
+        text: 'Ova akcija je nepovratna!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Da, obriši!',
+        cancelButtonText: 'Ne, odustani'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Slanje zahteva za brisanje
+            window.electronAPI.deleteData(tableName, 'id = ?', [id]);
+
+            // Slušanje na odgovor o uspešnom brisanju
+            window.electronAPI.onDataDeleted((response) => {
+                Swal.fire({
+                    title: 'Obrisano!',
+                    text: 'Red je uspešno obrisan.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Ponovno učitavanje podataka nakon brisanja
+                    if (tableName === 'products') {
+                        window.electronAPI.fetchData('products');
+                    } else if (tableName === 'clients') {
+                        window.electronAPI.fetchClients('clients');
+                    }
+                });
+            });
+
+            // Slušanje na grešku prilikom brisanja
+            window.electronAPI.onDeleteError((error) => {
+                Swal.fire({
+                    title: 'Greška',
+                    text: `Došlo je do greške prilikom brisanja: ${error}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
 
 // Postavljanje layouta sa tabovima
 document.querySelectorAll('.tabs .tab').forEach((tab, index) => {
@@ -1240,10 +1308,7 @@ async function calculateSumm(){
 		document.getElementById('finalPDV').textContent = formatNumber(sumaIznosPdv);
 	
 		// Ispisivanje ukupnog iznosa za placanje
-		document.getElementById('finalPlacanje').textContent = formatNumber(sumaUkupno);
-
-		console.log('test');
-		
+		document.getElementById('finalPlacanje').textContent = formatNumber(sumaUkupno);	
 
 		resolve();
 	});
@@ -1277,20 +1342,108 @@ async function fillUserData(){
 }
 
 
-// Dodavanje event listenera za klik na dugme
+// Dodavanje event listenera za klik na dugme createPdf
 document.getElementById('createPdf').addEventListener('click', async () => {
-    const pagePreviewElement = document.getElementById('pagePreview');
-    if (!pagePreviewElement) {
-        console.error('Element sa ID-jem #pagePreview nije pronađen.');
-        return;
+    try {
+        // Rezervacija broja ponude
+        const reservedOfferData = await window.electronAPI.reserveOfferNumber(window.potentialOfferNumber);
+
+        const yearString = reservedOfferData.godina.toString().slice(-2);
+        const offerNumberString = reservedOfferData.broj.toString().padStart(3, '0');
+
+        // Promeni broj ponude (u slucaju da je promenjen)
+        document.getElementById('ponudaGodina').textContent = yearString;
+        document.getElementById('ponudaBroj').textContent = offerNumberString;
+
+        // Nastavi sa kreiranjem pdf fajla
+        const pagePreviewElement = document.getElementById('pagePreview');
+        if (!pagePreviewElement) {
+            console.error('Element with ID #pagePreview not found.');
+            return;
+        }
+
+        const pagePreviewHTML = pagePreviewElement.outerHTML;
+
+        // Snimanje podataka ponude u bazu
+        await saveOfferData(reservedOfferData);
+
+        // Posalji na bekend da se kreira pdf
+        window.electronAPI.createPdf(pagePreviewHTML);
+
+        Swal.fire({
+            title: 'Uspeh',
+            text: 'Ponuda je uspešno kreirana i PDF je generisan.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+        });
+
+    } catch (error) {
+        console.error('Error creating offer:', error);
+        Swal.fire({
+            title: 'Greška',
+            text: 'Došlo je do greške prilikom kreiranja ponude.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
     }
-
-    // Uzimanje HTML sadržaja elementa
-    const pagePreviewHTML = pagePreviewElement.outerHTML;
-
-    // Slanje sadržaja na backend za kreiranje PDF-a
-    window.electronAPI.createPdf(pagePreviewHTML);
 });
+
+// Funkcija za snimanje podataka iz ponude
+async function saveOfferData(offerData) {
+    // Prikupljanje podataka
+    const offerNumber = offerData.broj;
+    const offerYear = offerData.godina;
+    const clientName = document.getElementById('nazivKupca').textContent || '';
+    const clientAddress = document.getElementById('adresaKupca').textContent || '';
+    const clientCity = document.getElementById('mestoKupca').textContent || '';
+    const clientPIB = document.getElementById('pibKupca').textContent || '';
+    const clientMB = document.getElementById('mbKupca').textContent || '';
+
+    const totalAmount = parseFloat(parseFormattedNumber(document.getElementById('finalIznos').textContent));
+    const totalVAT = parseFloat(parseFormattedNumber(document.getElementById('finalPDV').textContent));
+    const totalWithVAT = parseFloat(parseFormattedNumber(document.getElementById('finalPlacanje').textContent));
+
+    // const notes = document.querySelector('[contenteditable][data-note]').innerText || '';
+	// console.log(notes);
+	
+    // Pokupi stavke iz ponude
+    const items = [];
+    const rows = document.querySelectorAll('#ponudaRow tbody > tr');
+    rows.forEach(row => {
+        const item = {
+            code: row.cells[1].textContent,
+            description: row.cells[2].textContent,
+            unit: row.cells[3].textContent,
+            quantity: parseFloat(parseFormattedNumber(row.querySelector('[cellName="kolicina"]').innerText)) || '',
+            price: parseFloat(parseFormattedNumber(row.querySelector('[cellName="cena"]').innerText)) || '',
+            discount: parseFloat(parseFormattedNumber(row.querySelector('[cellName="rabat"]').innerText)),
+            priceWithDiscount: parseFloat(parseFormattedNumber(row.querySelector('[cellName="cenarabat"]').innerText)) || '',
+            amount: parseFloat(parseFormattedNumber(row.querySelector('[cellName="iznos"]').innerText)) || '',
+            vatPercent: parseFloat(parseFormattedNumber(row.querySelector('[cellName="pdv"]').innerText)) || '',
+            vatAmount: parseFloat(parseFormattedNumber(row.querySelector('[cellName="iznospdv"]').innerText)) || '',
+            total: parseFloat(parseFormattedNumber(row.querySelector('[cellName="ukupno"]').innerText)) || '',
+        };
+        items.push(item);
+    });
+
+    const data = {
+        offerNumber,
+        offerYear,
+        clientName,
+        clientAddress,
+        clientCity,
+        clientPIB,
+        clientMB,
+        totalAmount,
+        totalVAT,
+        totalWithVAT,
+        items,
+        // dodati ostale kolone ako je potrebno
+    };
+
+    // Poziv preko `electronAPI`
+    await window.electronAPI.saveOffer(data);
+}
 
 // Primanje obaveštenja o kreiranju PDF-a
 window.electronAPI.onPdfCreated((event, response) => {
@@ -1359,6 +1512,7 @@ document.getElementById("resetForm").addEventListener('click', () => {
 	
 	dataFill();
 	fillUserData();
+	setPotentialOfferNumber();
 	
 	// Prikaz poruke o uspešnom resetovanju (opciono)
 	Swal.fire({
@@ -1403,3 +1557,52 @@ document.addEventListener('mouseup', function () {
         document.body.style.cursor = 'default';
     }
 });
+
+// Funkcija za broj ponude
+async function setOfferNumber() {
+    try {
+        const offerData = await window.electronAPI.getNextOfferNumber();
+
+        // Ekstrakcija poslednje dve cifre godine
+        const yearString = offerData.godina.toString().slice(-2);
+
+        // Broj ponude sa vodećim nulama
+        const offerNumberString = offerData.broj.toString().padStart(3, '0');
+
+        // Postavljanje vrednosti u HTML
+        document.getElementById('ponudaGodina').textContent = yearString;
+        document.getElementById('ponudaBroj').textContent = offerNumberString;
+    } catch (error) {
+        console.error('Error setting offer number:', error);
+        Swal.fire({
+            title: 'Greška',
+            text: 'Došlo je do greške prilikom generisanja broja ponude.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+    }
+}
+
+// Funkcija za postavljanje potencijalnog broja ponude
+async function setPotentialOfferNumber() {
+    try {
+        const offerData = await window.electronAPI.getPotentialOfferNumber();
+
+        const yearString = offerData.godina.toString().slice(-2);
+        const offerNumberString = offerData.broj.toString().padStart(3, '0');
+
+        document.getElementById('ponudaGodina').textContent = yearString;
+        document.getElementById('ponudaBroj').textContent = offerNumberString;
+
+        // Snimi potencijalni broj ponude za kasniju upotrebu
+        window.potentialOfferNumber = offerData.broj;
+    } catch (error) {
+        console.error('Error setting potential offer number:', error);
+        Swal.fire({
+            title: 'Greška',
+            text: 'Došlo je do greške prilikom dobijanja broja ponude.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+    }
+}

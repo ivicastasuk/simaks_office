@@ -14,6 +14,10 @@
         cursor: col-resize;
         position: relative;
     }
+
+    [contenteditable] {
+        cursor: text;
+    }
 }
 
 @layer components {

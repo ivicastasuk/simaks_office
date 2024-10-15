@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { join } = require('path');
-const { fetchData, insertData, updateData } = require('./db/database.js');
+const { fetchData, insertData, updateData, deleteData, getNextOfferNumber, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase } = require('./db/database.js');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const path = require('path');
@@ -143,6 +143,21 @@ ipcMain.handle('save-image', async (event, fileName, buffer) => {
 // Event listener for creating PDF when #createPdf button is clicked
 ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
     try {
+        // Otvaranje dialoga za snimanje
+        const { canceled, filePath } = await dialog.showSaveDialog({
+            title: 'Save PDF',
+            defaultPath: 'ponuda.pdf',
+            filters: [
+                { name: 'PDF Files', extensions: ['pdf'] },
+            ]
+        });
+
+        // Ako je korisnik odustao od čuvanja
+        if (canceled || !filePath) {
+            event.reply('pdf-created', { success: false, message: 'Save canceled by user.' });
+            return;
+        }
+
         const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
 
@@ -163,10 +178,9 @@ ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
             `,
         });
 
-        // Generiši PDF
-        const pdfPath = path.resolve('./temp/ponude/ponuda.pdf');
+        // Generiši PDF i snimi ga na odabranu lokaciju
         await page.pdf({
-            path: pdfPath,
+            path: filePath,
             format: 'A4',
             printBackground: true
         });
@@ -175,9 +189,59 @@ ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
         console.log('PDF uspešno generisan.');
 
         // Vrati putanju do PDF-a nazad na frontend
-        event.reply('pdf-created', { success: true, path: pdfPath });
+        event.reply('pdf-created', { success: true, path: filePath });
     } catch (error) {
         console.error('Došlo je do greške:', error);
         event.reply('pdf-created', { success: false, message: error.message });
+    }
+});
+
+ipcMain.on('delete-data', async (event, { tableName, conditionString, conditionValues }) => {
+    try {
+        const result = await deleteData(tableName, conditionString, conditionValues);
+        event.reply('data-deleted', result);
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        event.reply('delete-error', error.message);
+    }
+});
+
+ipcMain.handle('get-next-offer-number', async () => {
+    try {
+        const result = await getNextOfferNumber();
+        return result;
+    } catch (error) {
+        console.error('Error getting next offer number:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('get-potential-offer-number', async () => {
+    try {
+        const result = await getPotentialOfferNumber();
+        return result;
+    } catch (error) {
+        console.error('Error getting potential offer number:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('reserve-offer-number', async (event, expectedNumber) => {
+    try {
+        const result = await reserveOfferNumber(expectedNumber);
+        return result;
+    } catch (error) {
+        console.error('Error reserving offer number:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('save-offer', async (event, offerData) => {
+    try {
+        const result = await saveOfferToDatabase(offerData);
+        return result;
+    } catch (error) {
+        console.error('Error saving offer data:', error);
+        throw error;
     }
 });

@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onSettingsFetched: (callback) => ipcRenderer.on('settings-fetched', (event, data) => callback(data)),
     updateCompany: (updateDetails) => ipcRenderer.send('update-company', updateDetails),
     onCompanyUpdated: (callback) => ipcRenderer.on('company-updated', (event, result) => callback(result)),
+    // Brisanje podataka
+    deleteData: (tableName, conditionString, conditionValues) => ipcRenderer.send('delete-data', { tableName, conditionString, conditionValues }),
+    onDataDeleted: (callback) => ipcRenderer.on('data-deleted', (event, result) => callback(result)),
     // Ostalo
     saveImage: (filePath, buffer) => ipcRenderer.invoke('save-image', filePath, buffer),
     closeWindow: () => ipcRenderer.send('close-window'),
@@ -28,5 +31,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     maximizeWindow: () => ipcRenderer.send('maximize-window'),
     unmaximizeWindow: () => ipcRenderer.send('unmaximize-window'),
     createPdf: (htmlContent) => ipcRenderer.send('create-pdf', htmlContent),
-    onPdfCreated: (callback) => ipcRenderer.on('pdf-created', (event, response) => callback(event, response))
+    onPdfCreated: (callback) => ipcRenderer.on('pdf-created', (event, response) => callback(event, response)),
+    getNextOfferNumber: () => ipcRenderer.invoke('get-next-offer-number'),
+    getPotentialOfferNumber: () => ipcRenderer.invoke('get-potential-offer-number'),
+    reserveOfferNumber: (expectedNumber) => ipcRenderer.invoke('reserve-offer-number', expectedNumber),
+    saveOffer: (offerData) => ipcRenderer.invoke('save-offer', offerData),
 });

@@ -94,21 +94,32 @@ async function insertData(tableName, data) {
     let connection;
     try {
         connection = await connect();
+
         // Validacija ulaznih podataka
         if (!tableName || typeof data !== 'object' || Object.keys(data).length === 0) {
-            throw new Error('Invalid table name or columns');
+            throw new Error('Invalid table name or data object');
         }
 
-        // Priprema delova upita
+        // Provera da su svi ključevi stringovi i da data sadrži vrednosti
         const keys = Object.keys(data);
-        const values = keys.map(key => data[ key ]);
-        const placeholders = keys.map(() => '?').join(', ');  // Kreira string placeholdera
+        if (!keys.every(key => typeof key === 'string')) {
+            throw new Error('Invalid data keys, expected strings');
+        }
+
+        const values = keys.map(key => data[key]);
+        const placeholders = keys.map(() => '?').join(', ');
         const columnNames = keys.join(', ');
 
         // Kreiranje i izvršavanje SQL upita
         const query = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders})`;
-        const result = await connection.execute(query, values);
-        return result;
+        const [result] = await connection.execute(query, values);  // Koristimo destructuring da dobijemo samo prvi element iz niza
+
+        // Vraćanje rezultata, npr. `insertId` ili broj zahvaćenih redova
+        return {
+            insertId: result.insertId,
+            affectedRows: result.affectedRows,
+            message: 'Insert successful'
+        };
     } catch (error) {
         console.error('Error inserting data:', error);
         throw error;
@@ -119,5 +130,232 @@ async function insertData(tableName, data) {
     }
 }
 
-// export default { connect, fetchData, insertData };
-module.exports = { connect, fetchData, insertData, updateData };
+// Funkcija za brisanje podataka iz baze
+async function deleteData(tableName, conditionString, conditionValues) {
+    let connection;
+    try {
+        connection = await connect();
+
+        // Validacija ulaznih parametara
+        if (!tableName || typeof tableName !== 'string') {
+            throw new Error('Invalid table name');
+        }
+        if (!conditionString || typeof conditionString !== 'string') {
+            throw new Error('Condition string must be a non-empty string');
+        }
+        if (!Array.isArray(conditionValues)) {
+            throw new Error('Condition values must be an array');
+        }
+
+        // Kreiranje i izvršavanje SQL upita
+        const query = `DELETE FROM \`${tableName}\` WHERE ${conditionString}`;
+        const [result] = await connection.execute(query, conditionValues);
+        return result;
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// Uzimanje broja ponude iz baze
+async function getNextOfferNumber() {
+    let connection;
+    try {
+        connection = await connect();
+
+        const currentYear = new Date().getFullYear();
+        let query = 'SELECT * FROM offer_numbers WHERE godina = ?';
+        let [rows] = await connection.execute(query, [currentYear]);
+
+        if (rows.length > 0) {
+            // Postoji zapis za tekuću godinu
+            let currentNumber = rows[0].broj + 1;
+
+            // Ažuriraj broj u bazi
+            query = 'UPDATE offer_numbers SET broj = ? WHERE godina = ?';
+            await connection.execute(query, [currentNumber, currentYear]);
+
+            return { godina: currentYear, broj: currentNumber };
+        } else {
+            // Ne postoji zapis za tekuću godinu, kreiraj novi
+            let currentNumber = 1;
+
+            query = 'INSERT INTO offer_numbers (godina, broj) VALUES (?, ?)';
+            await connection.execute(query, [currentYear, currentNumber]);
+
+            return { godina: currentYear, broj: currentNumber };
+        }
+    } catch (error) {
+        console.error('Error getting next offer number:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// Funkcija za dobijanje potencijalnog sledećeg broja ponude
+// Function to get the next potential offer number without reserving it
+async function getPotentialOfferNumber() {
+    let connection;
+    try {
+        connection = await connect();
+
+        const currentYear = new Date().getFullYear();
+        let query = 'SELECT MAX(broj) as maxBroj FROM offer_numbers WHERE godina = ?';
+        let [rows] = await connection.execute(query, [currentYear]);
+
+        let maxBroj = rows[0].maxBroj || 0;
+        let potentialNumber = parseInt(maxBroj, 10) + 1;
+
+        return { godina: currentYear, broj: potentialNumber };
+    } catch (error) {
+        console.error('Error getting potential offer number:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// Function to reserve the offer number when creating the offer
+async function reserveOfferNumber(expectedNumber) {
+    let connection;
+    try {
+        connection = await connect();
+
+        const currentYear = new Date().getFullYear();
+
+        // Start transaction
+        await connection.beginTransaction();
+
+        // Lock the table to prevent concurrent modifications
+        let query = 'SELECT MAX(broj) as maxBroj FROM offer_numbers WHERE godina = ? FOR UPDATE';
+        let [rows] = await connection.execute(query, [currentYear]);
+
+        let maxBroj = rows[0].maxBroj || 0;
+        let nextNumber = parseInt(maxBroj, 10) + 1;
+
+        let finalNumber;
+
+        if (nextNumber === expectedNumber) {
+            // We can use the expected number
+            finalNumber = expectedNumber;
+        } else {
+            // Another offer was created in the meantime; use the next available number
+            finalNumber = nextNumber;
+        }
+
+        // Update or insert the new number in offer_numbers
+        if (maxBroj) {
+            // Update existing record
+            query = 'UPDATE offer_numbers SET broj = ? WHERE godina = ?';
+            await connection.execute(query, [finalNumber, currentYear]);
+        } else {
+            // Ubaci novi podatak u godinu
+            query = 'INSERT INTO offer_numbers (godina, broj) VALUES (?, ?)';
+            await connection.execute(query, [currentYear, finalNumber]);
+        }
+
+        await connection.commit();
+
+        return { godina: currentYear, broj: finalNumber };
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('Error reserving offer number:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// Snimanje ponude u bazu
+async function saveOfferToDatabase(offerData) {
+    let connection;
+    try {
+        connection = await connect();
+
+        // Start transaction
+        await connection.beginTransaction();
+
+        console.log('offerData:', offerData);
+
+        // Insert into offers table
+        const offerQuery = `
+            INSERT INTO offers (
+                offer_number, offer_year, client_name, client_address, client_city, client_pib, client_mb,
+                total_amount, total_vat, total_with_vat
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const offerValues = [
+            offerData.offerNumber,
+            offerData.offerYear,
+            offerData.clientName,
+            offerData.clientAddress,
+            offerData.clientCity,
+            offerData.clientPIB,
+            offerData.clientMB,
+            offerData.totalAmount,
+            offerData.totalVAT,
+            offerData.totalWithVAT
+        ];
+
+        const [offerResult] = await connection.execute(offerQuery, offerValues);
+        const offerId = offerResult.insertId;
+
+        // Insert items into offer_items table
+        const itemQuery = `
+            INSERT INTO offer_items (
+                offer_id, code, description, unit, quantity, price, discount, price_with_discount, amount, vat_percent, vat_amount, total
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        for (const item of offerData.items) {
+            const itemValues = [
+                offerId,
+                item.code,
+                item.description,
+                item.unit,
+                item.quantity,
+                item.price,
+                item.discount,
+                item.priceWithDiscount,
+                item.amount,
+                item.vatPercent,
+                item.vatAmount,
+                item.total
+            ];
+
+            await connection.execute(itemQuery, itemValues);
+        }
+
+        // Commit transaction
+        await connection.commit();
+
+        return { success: true, offerId };
+    } catch (error) {
+        // Rollback transaction in case of error
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('Error saving offer to database:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// export default
+module.exports = { connect, fetchData, insertData, updateData, deleteData, getNextOfferNumber, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase };
