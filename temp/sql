@@ -1,0 +1,6 @@
+UPDATE products
+SET code = CAST(code AS SIGNED)
+WHERE code REGEXP '^[0-9]+$';
+
+ALTER TABLE products
+MODIFY code INT;

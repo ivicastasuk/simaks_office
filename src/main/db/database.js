@@ -106,13 +106,13 @@ async function insertData(tableName, data) {
             throw new Error('Invalid data keys, expected strings');
         }
 
-        const values = keys.map(key => data[key]);
+        const values = keys.map(key => data[ key ]);
         const placeholders = keys.map(() => '?').join(', ');
         const columnNames = keys.join(', ');
 
         // Kreiranje i izvršavanje SQL upita
         const query = `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders})`;
-        const [result] = await connection.execute(query, values);  // Koristimo destructuring da dobijemo samo prvi element iz niza
+        const [ result ] = await connection.execute(query, values);  // Koristimo destructuring da dobijemo samo prvi element iz niza
 
         // Vraćanje rezultata, npr. `insertId` ili broj zahvaćenih redova
         return {
@@ -149,7 +149,7 @@ async function deleteData(tableName, conditionString, conditionValues) {
 
         // Kreiranje i izvršavanje SQL upita
         const query = `DELETE FROM \`${tableName}\` WHERE ${conditionString}`;
-        const [result] = await connection.execute(query, conditionValues);
+        const [ result ] = await connection.execute(query, conditionValues);
         return result;
     } catch (error) {
         console.error('Error deleting data:', error);
@@ -170,9 +170,9 @@ async function getPotentialOfferNumber() {
 
         const currentYear = new Date().getFullYear();
         let query = 'SELECT MAX(broj) as maxBroj FROM offer_numbers WHERE godina = ?';
-        let [rows] = await connection.execute(query, [currentYear]);
+        let [ rows ] = await connection.execute(query, [ currentYear ]);
 
-        let maxBroj = rows[0].maxBroj || 0;
+        let maxBroj = rows[ 0 ].maxBroj || 0;
         let potentialNumber = parseInt(maxBroj, 10) + 1;
 
         return { godina: currentYear, broj: potentialNumber };
@@ -198,9 +198,9 @@ async function reserveOfferNumber(expectedNumber) {
 
         // Zakljucavanje reda za unos
         let query = 'SELECT MAX(broj) as maxBroj FROM offer_numbers WHERE godina = ? FOR UPDATE';
-        let [rows] = await connection.execute(query, [currentYear]);
+        let [ rows ] = await connection.execute(query, [ currentYear ]);
 
-        let maxBroj = rows[0].maxBroj || 0;
+        let maxBroj = rows[ 0 ].maxBroj || 0;
         let nextNumber = parseInt(maxBroj, 10) + 1;
 
         let finalNumber;
@@ -214,11 +214,11 @@ async function reserveOfferNumber(expectedNumber) {
         if (maxBroj) {
             // Rezervacija novog broja u godini
             query = 'UPDATE offer_numbers SET broj = ? WHERE godina = ?';
-            await connection.execute(query, [finalNumber, currentYear]);
+            await connection.execute(query, [ finalNumber, currentYear ]);
         } else {
             // Ubacivanje novog broja u godinu
             query = 'INSERT INTO offer_numbers (godina, broj) VALUES (?, ?)';
-            await connection.execute(query, [currentYear, finalNumber]);
+            await connection.execute(query, [ currentYear, finalNumber ]);
         }
 
         await connection.commit();
@@ -265,7 +265,7 @@ async function saveOfferToDatabase(offerData) {
             offerData.totalWithVAT
         ];
 
-        const [offerResult] = await connection.execute(offerQuery, offerValues);
+        const [ offerResult ] = await connection.execute(offerQuery, offerValues);
         const offerId = offerResult.insertId;
 
         // Ubacivanje stavki u tabelu "offer_items"
@@ -310,5 +310,27 @@ async function saveOfferToDatabase(offerData) {
     }
 }
 
+async function checkForDuplicateProduct(code, model) {
+    const connection = await connect();
+
+    // Provera postojanja šifre
+    const [ codeRows ] = await connection.execute(
+        'SELECT COUNT(*) as count FROM products WHERE code = ?',
+        [ code ]
+    );
+    const codeExists = codeRows[ 0 ].count > 0;
+
+    // Provera postojanja oznake
+    const [ modelRows ] = await connection.execute(
+        'SELECT COUNT(*) as count FROM products WHERE model = ?',
+        [ model ]
+    );
+    const modelExists = modelRows[ 0 ].count > 0;
+
+    await connection.end();
+
+    return { codeExists, modelExists };
+}
+
 // export default
-module.exports = { connect, fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase };
+module.exports = { connect, fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase, checkForDuplicateProduct };

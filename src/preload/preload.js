@@ -36,4 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getPotentialOfferNumber: () => ipcRenderer.invoke('get-potential-offer-number'),
     reserveOfferNumber: (expectedNumber) => ipcRenderer.invoke('reserve-offer-number', expectedNumber),
     saveOffer: (offerData) => ipcRenderer.invoke('save-offer', offerData),
+    // Provera duplikata
+    checkForDuplicateProduct: (code, model) => ipcRenderer.send('checkForDuplicateProduct', code, model),
+    onDuplicateCheckResult: (callback) => ipcRenderer.once('duplicateCheckResult', (event, result) => callback(result)),
 });

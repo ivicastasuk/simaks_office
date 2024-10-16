@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { join } = require('path');
-const { fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase } = require('./db/database.js');
+const { fetchData, insertData, updateData, deleteData, getPotentialOfferNumber, reserveOfferNumber, saveOfferToDatabase, checkForDuplicateProduct } = require('./db/database.js');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const path = require('path');
@@ -21,7 +21,7 @@ function createWindow() {
         height: 768,
         frame: false,
         transparent: false,
-        icon: join(__dirname, '../renderer/img/serbia.png'),
+        icon: join(__dirname, '../renderer/img/favicon.png'),
         webPreferences: {
             preload: join(__dirname, '../preload/preload.js'),
             contextIsolation: true,
@@ -148,7 +148,7 @@ ipcMain.on('create-pdf', async (event, pagePreviewHTML) => {
             title: 'Save PDF',
             defaultPath: 'ponuda.pdf',
             filters: [
-                { name: 'PDF Files', extensions: ['pdf'] },
+                { name: 'PDF Files', extensions: [ 'pdf' ] },
             ]
         });
 
@@ -202,7 +202,6 @@ ipcMain.on('delete-data', async (event, { tableName, conditionString, conditionV
         event.reply('data-deleted', result);
     } catch (error) {
         console.error('Error deleting data:', error);
-        event.reply('delete-error', error.message);
     }
 });
 
@@ -243,5 +242,14 @@ ipcMain.handle('save-offer', async (event, offerData) => {
     } catch (error) {
         console.error('Error saving offer data:', error);
         throw error;
+    }
+});
+
+ipcMain.on('checkForDuplicateProduct', async (event, code, model) => {
+    try {
+        const result = await checkForDuplicateProduct(code, model);
+        event.reply('duplicateCheckResult', result);
+    } catch (error) {
+        console.error('Error checking for duplicate product:', error);
     }
 });
