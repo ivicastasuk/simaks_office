@@ -1,18 +1,19 @@
 const { createConnection } = require('mysql2/promise');
+const config = require('../config');
 
-// Objekat za konfiguraciju konekcije
-const dbConfig = {
-    host: 'localhost',
-    port: '3307',
-    user: 'liridenet',
-    password: 'liridenetns',
-    database: 'simaks_office'
-};
+// // Objekat za konfiguraciju konekcije
+// const dbConfig = {
+//     host: 'localhost',
+//     port: '3307',
+//     user: 'liridenet',
+//     password: 'liridenetns',
+//     database: 'simaks_office'
+// };
 
 // Funkcija za konekciju na bazu
 async function connect() {
     try {
-        const connection = await createConnection(dbConfig);
+        const connection = await createConnection(config.db);
         console.log('Successfully connected to the database');
         return connection;
     } catch (error) {

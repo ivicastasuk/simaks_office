@@ -432,6 +432,8 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 				text: 'Proizvod je uspesno dodan u bazu!',
 				icon: 'info',
 				confirmButtonText: 'OK'
+			}).then(() => {
+				window.electronAPI.fetchData('products');
 			});
 		} catch (error) {
 			console.error('Error inserting data:', error);
@@ -442,6 +444,7 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 				confirmButtonText: 'OK'
 			});
 		}
+		await resetProductInputs();
 	});
 });
 
@@ -480,6 +483,8 @@ document.querySelectorAll('button[name=insertClient]').forEach((button, index) =
 				text: 'Klijent je uspesno dodan u bazu!',
 				icon: 'info',
 				confirmButtonText: 'OK'
+			}).then(() => {
+				window.electronAPI.fetchClients('clients');
 			});
 		} catch (error) {
 			console.error('Error inserting data:', error);
@@ -685,18 +690,74 @@ async function uploadImage(file) {
 
 // Event listener za izbor slike u input polju
 document.getElementById('imgInput').addEventListener('change', async function (event) {
-	const file = event.target.files[ 0 ];
-	if (!file) {
-		return;
-	}
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
 
-	// Upload slike na server
-	const imageName = await uploadImage(file);
+    // Validacija tipa fajla
+    const validTypes = ['image/jpeg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Neispravan tip fajla. Molimo izaberite JPEG ili PNG sliku.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        event.target.value = ''; // Resetujemo input
+        return;
+    }
 
-	if (imageName) {
-		// Skladistenje naziva slike za kasniju upotrebu
-		window.uploadedImageName = imageName;
-	}
+    // Validacija veličine fajla (1MB = 1048576 bajtova)
+    if (file.size > 1048576) {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Veličina fajla prelazi 1MB. Molimo izaberite manji fajl.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        event.target.value = ''; // Resetujemo input
+        return;
+    }
+
+    // Validacija dimenzija slike
+    const img = new Image();
+    img.onload = async function () {
+        if (img.width > 1024 || img.height > 1024) {
+            Swal.fire({
+                title: 'Greška',
+                text: 'Dimenzije slike prelaze 1024x1024 piksela. Molimo izaberite manju sliku.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
+            event.target.value = ''; // Resetujemo input
+            return;
+        }
+
+        // Ako su sve validacije prošle, nastavljamo sa uploadom slike
+        const imageName = await uploadImage(file);
+
+        if (imageName) {
+            // Skladištenje naziva slike za kasniju upotrebu
+            window.uploadedImageName = imageName;
+        }
+    };
+    img.onerror = function () {
+        Swal.fire({
+            title: 'Greška',
+            text: 'Neispravan fajl slike.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        event.target.value = ''; // Resetujemo input
+    };
+
+    // Čitamo fajl kao Data URL da bismo mogli da učitamo sliku
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 });
 
 // SweetAlert2 funkcije
@@ -1569,4 +1630,18 @@ async function setPotentialOfferNumber() {
             confirmButtonText: 'OK',
         });
     }
+}
+
+async function resetProductInputs(){
+	document.querySelector('[name=code]').value = '';
+	document.querySelector('[name=manufacturer]').value = '';
+	document.querySelector('[name=name]').value = '';
+	document.querySelector('[name=model]').value = '';
+	document.querySelector('[name=description]').value = '';
+	document.querySelector('[name=price]').value = '0';
+	document.querySelector("select[name=type]").value = 'P';
+	document.querySelector("select[name=units]").value = 'kom';
+	window.uploadedImageName = null; 
+	document.getElementById('imgInput').value = '';
+	document.getElementById('imageContainer').style.backgroundImage = '';
 }
