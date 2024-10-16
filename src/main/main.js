@@ -32,7 +32,7 @@ function createWindow() {
 
     mainWindow.loadFile('./src/renderer/index.html');
     mainWindow.setMenu(null);
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
     mainWindow.maximize();
 
     ipcMain.on('close-window', () => {

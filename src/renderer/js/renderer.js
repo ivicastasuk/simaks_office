@@ -197,7 +197,7 @@ window.electronAPI.onSettingsFetched((settingsData) => {
 
 // Slanje zahteva za preuzimanje podataka o artiklima iz baze
 document.getElementById('fetchData').addEventListener('click', () => {
-	window.electronAPI.fetchData('products');
+	window.electronAPI.fetchData('products','*', 'ORDER BY code DESC');
 });
 
 // Slanje zahteva za preuzimanje podataka o klijentima iz baze
@@ -206,7 +206,7 @@ document.getElementById('fetchClients').addEventListener('click', () => {
 });
 
 // Primanje podataka iz baze
-window.electronAPI.onDataFetched((data) => {
+window.electronAPI.onDataFetched ((data) => {
 	// Uzimanje referenci na kontejner
 	const container = document.getElementById('data-container');
 
@@ -216,6 +216,7 @@ window.electronAPI.onDataFetched((data) => {
 	// Kreiranje tabele
 	const table = document.createElement('table');
 	table.className = 'table';
+	table.id = "proizvodi";
 
 	// Kreiranje i popunjavanje zaglavlja tabele
 	const thead = document.createElement('thead');
@@ -433,7 +434,10 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 				icon: 'info',
 				confirmButtonText: 'OK'
 			}).then(() => {
-				window.electronAPI.fetchData('products');
+				window.electronAPI.fetchData('products', '*', 'ORDER BY code DESC');
+			}).then(() => {
+				resetProductInputs();
+				document.querySelector('[name=code]').focus();
 			});
 		} catch (error) {
 			console.error('Error inserting data:', error);
@@ -444,7 +448,6 @@ document.querySelectorAll('button[name=insertData]').forEach((button, index) => 
 				confirmButtonText: 'OK'
 			});
 		}
-		await resetProductInputs();
 	});
 });
 
@@ -1644,4 +1647,5 @@ async function resetProductInputs(){
 	window.uploadedImageName = null; 
 	document.getElementById('imgInput').value = '';
 	document.getElementById('imageContainer').style.backgroundImage = '';
+	document.querySelector('[name=code]').focus();
 }
