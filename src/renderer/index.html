@@ -8,6 +8,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./css/main.css">
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
 		<style>
             * {
                 box-sizing: border-box;
@@ -271,7 +272,26 @@
 						<button id="fetchData" class="p-2 btn btn-primary">Izvuci podatke</button>
 						<button id="insertData" name="insertData" class="p-2 btn btn-primary">Upisi podatke</button>
 					</div> 			
-					<div id="data-container" class="w-full"></div>
+					<div id="data-container" class="w-full">
+						<table id="proizvodi" class="w-full table">
+							<thead>
+								<tr>
+									<th id="btn-sort" class="w-[5%] uppercase text-base cursor-pointer desc">Šifra</th>
+									<th class="w-[5%] uppercase text-base">Tip</th>
+									<th class="w-[12%] uppercase text-base">Proizvođač</th>
+									<th class="w-[10%] uppercase text-base">Naziv</th>
+									<th class="w-[10%] uppercase text-base">Oznaka</th>
+									<th class="w-[5%] uppercase text-base">Slika</th>
+									<th class="w-[15%] uppercase text-base">Opis</th>
+									<th class="w-[10%] uppercase text-base">Stavke</th>
+									<th class="w-[5%] uppercase text-base">JM</th>
+									<th class="w-[8%] uppercase text-base">Cena</th>
+									<th class="w-[15%] uppercase text-base"></th>
+								</tr>
+							</thead>
+							<tbody id="product-list"></tbody>
+						</table>
+					</div>
 				</div>
 				<!-- Tab: Baze klijenata -->
 				<div id="content4" class="w-full h-main p-4 hidden flex-col justify-start items-start overflow-x-hidden overflow-y-auto"> 

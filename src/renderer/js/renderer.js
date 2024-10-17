@@ -19,6 +19,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.documentElement.setAttribute('data-theme', 'dark');
 		// document.body.classList.remove('dark');
 	}
+
+	const el = document.getElementById('btn-sort');
+	el.addEventListener('click', () => {
+		if(el.classList.contains('desc')){
+			window.electronAPI.fetchData('products', '*', 'ORDER BY code ASC');
+			el.classList.remove('desc');
+			el.classList.add('asc');
+		} else {
+			window.electronAPI.fetchData('products', '*', 'ORDER BY code DESC');
+			el.classList.remove('asc');
+			el.classList.add('desc');
+		}
+	});
 });
 
 // Login forma
@@ -207,31 +220,32 @@ document.getElementById('fetchClients').addEventListener('click', () => {
 
 // Primanje podataka iz baze
 window.electronAPI.onDataFetched((data) => {
-	// Uzimanje referenci na kontejner
-	const container = document.getElementById('data-container');
+	// // Uzimanje referenci na kontejner
+	// const container = document.getElementById('data-container');
 
-	// Brisanje prethodnih podataka
-	container.innerHTML = '';
+	// // Brisanje prethodnih podataka
+	// container.innerHTML = '';
 
 	// Kreiranje tabele
-	const table = document.createElement('table');
-	table.className = 'table';
-	table.id = "proizvodi";
+	// const table = document.createElement('table');
+	// table.className = 'table';
+	// table.id = "proizvodi";
 
-	// Kreiranje i popunjavanje zaglavlja tabele
-	const thead = document.createElement('thead');
-	const headerRow = document.createElement('tr');
-	const headers = [ "Šifra", "Tip", "Proizvođač", "Naziv", "Oznaka", "Slika", "Opis", "Stavke", "JM", "Cena" ];
-	headers.forEach(text => {
-		const th = document.createElement('th');
-		th.textContent = text;
-		headerRow.appendChild(th);
-	});
-	thead.appendChild(headerRow);
-	table.appendChild(thead);
+	// // Kreiranje i popunjavanje zaglavlja tabele
+	// const thead = document.createElement('thead');
+	// const headerRow = document.createElement('tr');
+	// const headers = [ "Šifra", "Tip", "Proizvođač", "Naziv", "Oznaka", "Slika", "Opis", "Stavke", "JM", "Cena" ];
+	// headers.forEach(text => {
+	// 	const th = document.createElement('th');
+	// 	th.textContent = text;
+	// 	headerRow.appendChild(th);
+	// });
+	// thead.appendChild(headerRow);
+	// table.appendChild(thead);
 
 	// Kreiranje tela tabele
-	const tbody = document.createElement('tbody');
+	const tbody = document.getElementById("product-list");
+	tbody.innerHTML = '';
 
 	data.forEach(row => {
 		const tr = document.createElement('tr');
@@ -284,40 +298,53 @@ window.electronAPI.onDataFetched((data) => {
 
 		// Kreiranje i dodavanje ćelija za cenu
 		const tdPrice = document.createElement('td');
-		tdPrice.textContent = parseFloat(row.price).toFixed(2);
+		tdPrice.textContent = formatNumber(row.price);
 		tdPrice.setAttribute('class', 'text-right');
 		tr.appendChild(tdPrice);
 
 		// Kreiranje dugmeta za brisanje
 		const tdActions = document.createElement('td');
+		tdActions.style.display = "flex";
+		tdActions.style.flexDirection = "column";
+		tdActions.style.justifyContent = "center";
+		tdActions.style.alignItems = "flex-start";
+		tdActions.style.gap = "4px";
 		const deleteButton = document.createElement('button');
-		deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+		deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
 		deleteButton.addEventListener('click', () => {
 			// Pozivanje funkcije za brisanje
 			deleteRow('products', row.id);
 		});
 		tdActions.appendChild(deleteButton);
+
+		// Kreiranje dugmeta za editovanje
+		const editButton = document.createElement('button');
+		editButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#1C71A1" d="M3 10h11v2H3zm0-2h11V6H3zm0 8h7v-2H3zm15.01-3.13l.71-.71a.996.996 0 0 1 1.41 0l.71.71c.39.39.39 1.02 0 1.41l-.71.71zm-.71.71l-5.3 5.3V21h2.12l5.3-5.3z"/></svg>';
+		editButton.addEventListener('click', () => {
+			populateFormWithProduct(row); // Funkcija za popunjavanje forme
+		});
+		tdActions.appendChild(editButton);
+
 		tr.appendChild(tdActions);
 
 		// Dodavanje reda u telo tabele
 		tbody.appendChild(tr);
 	});
 
-	// Dodavanje tela tabele u tabelu
-	table.appendChild(tbody);
+	// // Dodavanje tela tabele u tabelu
+	// table.appendChild(tbody);
 
-	// Dodavanje kompletne tabele u kontejner
-	container.appendChild(table);
+	// // Dodavanje kompletne tabele u kontejner
+	// container.appendChild(table);
 
-	// setTimeout(() => {
-	// 	const codeInput = document.querySelector('[name=code]');
-	// 	if (codeInput) {
-	// 		codeInput.focus();
-	// 	} else {
-	// 		console.log('Nema input polja za sifru!');
+	// document.querySelector("#proizvodi thead tr th:first-child").addEventListener("click", () => {
+	// 	if(this.classList.contains('desc') || ''){
+	// 		window.electronAPI.fetchData('products', '*', 'ORDER BY code ASC');
+	// 		this.classList.add('')
+	// 	} else if(this.classList.contains('asc')){
 
 	// 	}
-	// }, 0);
+	// });
 
 });
 
@@ -1695,3 +1722,8 @@ async function checkForDuplicateProduct(code, model) {
 		});
 	});
 }
+
+function createSanitizedText(text) {
+    return DOMPurify.sanitize(text);
+}
+

@@ -2636,6 +2636,10 @@ details.collapse summary::-webkit-details-marker {
   width: 100%;
 }
 
+.w-\[12\%\] {
+  width: 12%;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
