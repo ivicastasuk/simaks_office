@@ -2608,6 +2608,10 @@ details.collapse summary::-webkit-details-marker {
   width: 10%;
 }
 
+.w-\[12\%\] {
+  width: 12%;
+}
+
 .w-\[15\%\] {
   width: 15%;
 }
@@ -2634,10 +2638,6 @@ details.collapse summary::-webkit-details-marker {
 
 .w-full {
   width: 100%;
-}
-
-.w-\[12\%\] {
-  width: 12%;
 }
 
 .flex-1 {

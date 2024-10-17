@@ -89,6 +89,16 @@ ipcMain.on('insert-data', async (event, { tableName, data }) => {
     }
 });
 
+ipcMain.on('update-data', async (event, { tableName, data, conditionString, conditionValues }) => {
+    try {
+        const result = await updateData(tableName, data, conditionString, conditionValues);
+        event.reply('data-updated', result);
+    } catch (error) {
+        console.error('Error updating data:', error);
+        event.reply('update-error', error.message);
+    }
+});
+
 ipcMain.on('insert-client', async (event, { tableName, data }) => {
     try {
         const result = await insertData(tableName, data);

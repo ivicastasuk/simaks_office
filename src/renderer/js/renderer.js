@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const el = document.getElementById('btn-sort');
 	el.addEventListener('click', () => {
-		if(el.classList.contains('desc')){
+		if (el.classList.contains('desc')) {
 			window.electronAPI.fetchData('products', '*', 'ORDER BY code ASC');
 			el.classList.remove('desc');
 			el.classList.add('asc');
@@ -220,29 +220,6 @@ document.getElementById('fetchClients').addEventListener('click', () => {
 
 // Primanje podataka iz baze
 window.electronAPI.onDataFetched((data) => {
-	// // Uzimanje referenci na kontejner
-	// const container = document.getElementById('data-container');
-
-	// // Brisanje prethodnih podataka
-	// container.innerHTML = '';
-
-	// Kreiranje tabele
-	// const table = document.createElement('table');
-	// table.className = 'table';
-	// table.id = "proizvodi";
-
-	// // Kreiranje i popunjavanje zaglavlja tabele
-	// const thead = document.createElement('thead');
-	// const headerRow = document.createElement('tr');
-	// const headers = [ "Šifra", "Tip", "Proizvođač", "Naziv", "Oznaka", "Slika", "Opis", "Stavke", "JM", "Cena" ];
-	// headers.forEach(text => {
-	// 	const th = document.createElement('th');
-	// 	th.textContent = text;
-	// 	headerRow.appendChild(th);
-	// });
-	// thead.appendChild(headerRow);
-	// table.appendChild(thead);
-
 	// Kreiranje tela tabele
 	const tbody = document.getElementById("product-list");
 	tbody.innerHTML = '';
@@ -254,6 +231,7 @@ window.electronAPI.onDataFetched((data) => {
 		// Kreiranje i dodavanje ćelija za sifru
 		const tdCode = document.createElement('td');
 		tdCode.textContent = row.code;
+		tdCode.setAttribute('data', row.id);
 		tr.appendChild(tdCode);
 
 		// Kreiranje i dodavanje ćelija za tip
@@ -330,22 +308,6 @@ window.electronAPI.onDataFetched((data) => {
 		// Dodavanje reda u telo tabele
 		tbody.appendChild(tr);
 	});
-
-	// // Dodavanje tela tabele u tabelu
-	// table.appendChild(tbody);
-
-	// // Dodavanje kompletne tabele u kontejner
-	// container.appendChild(table);
-
-	// document.querySelector("#proizvodi thead tr th:first-child").addEventListener("click", () => {
-	// 	if(this.classList.contains('desc') || ''){
-	// 		window.electronAPI.fetchData('products', '*', 'ORDER BY code ASC');
-	// 		this.classList.add('')
-	// 	} else if(this.classList.contains('asc')){
-
-	// 	}
-	// });
-
 });
 
 // Primanje podataka o klijentima iz baze
@@ -1711,6 +1673,7 @@ async function resetProductInputs() {
 	window.uploadedImageName = null;
 	document.getElementById('imgInput').value = '';
 	document.getElementById('imageContainer').style.backgroundImage = '';
+	document.getElementById('imagePreview').src = 'http://simaks/img/products/dummy.jpg';
 }
 
 async function checkForDuplicateProduct(code, model) {
@@ -1723,7 +1686,120 @@ async function checkForDuplicateProduct(code, model) {
 	});
 }
 
+function populateFormWithProduct(rowData) {
+	document.querySelector('input[name="code"]').value = rowData.code;
+	document.querySelector('select[name="type"]').value = rowData.type;
+	document.querySelector('input[name="manufacturer"]').value = rowData.manufacturer;
+	document.querySelector('input[name="name"]').value = rowData.name;
+	document.querySelector('input[name="model"]').value = rowData.model;
+	document.getElementById('imagePreview').src = `http://simaks/img/products/${rowData.img_url}`;
+	document.querySelector('textarea[name="description"]').value = rowData.description;
+	document.querySelector('select[name="units"]').value = rowData.unit;
+	document.querySelector('input[name="price"]').value = rowData.price;
+
+	document.querySelector('button[name="updateData"]').disabled = false;
+	document.querySelector('button[name="updateData"]').setAttribute('data', rowData.id);
+	document.querySelector('button[name="insertData"]').disabled = true;
+
+}
+
+document.querySelector('button[name="updateData"]').addEventListener('click', async (event) => {
+	const dataID = event.currentTarget.getAttribute('data');
+	const code = parseInt(document.querySelector("input[name=code]").value.trim(), 10);
+	const type = document.querySelector("select[name=type]").value;
+	const manufacturer = document.querySelector("input[name=manufacturer]").value.trim();
+	const name = document.querySelector("input[name=name]").value.trim();
+	const model = document.querySelector("input[name=model]").value.trim();
+	const imageUrl = document.getElementById('imagePreview').src;
+	const image = imageUrl.split('/').pop() || "dummy.jpg";
+	const description = document.querySelector("textarea[name=description]").value.trim();
+	const unit = document.querySelector("select[name=units]").value;
+	const price = parseFloat(document.querySelector("input[name=price]").value.trim()).toFixed(2); // Obezbedite da je float sa dve decimale
+
+	// Validacija obaveznih polja
+	if (!code || !model) {
+		Swal.fire({
+			title: 'Greška',
+			text: 'Polja ŠIFRA i OZNAKA su obavezni...',
+			icon: 'error',
+			confirmButtonText: 'OK'
+		});
+		return;
+	}
+
+	try {
+		let image = "dummy.jpg"; // Podrazumevani naziv slike
+		const imageInput = document.getElementById('imgInput');
+		const imagePreview = document.getElementById('imagePreview');
+
+		if (imageInput.files && imageInput.files.length > 0) {
+			// Korisnik je izabrao novu sliku, pošalji je na server
+			const file = imageInput.files[ 0 ];
+			const uploadedImageName = await uploadImage(file); // Poziv funkcije za upload slike
+			if (uploadedImageName) {
+				image = uploadedImageName; // Ažuriraj naziv slike nakon uspešnog uploada
+			}
+		} else {
+			// Korisnik nije izabrao novu sliku, zadrži postojeću
+			image = imagePreview.src.split('/').pop(); // Zadrži naziv trenutne slike
+		}
+		// Ako artikal ne postoji, nastavljamo sa ažuriranjem
+		const updatedData = {
+			code: code,
+			type: type,
+			manufacturer: manufacturer,
+			name: name,
+			model: model,
+			img_url: image,
+			description: description,
+			unit: unit,
+			price: price,
+		};
+
+		const tableName = 'products';
+		const conditionString = 'id = ?';
+		const conditionValues = [ parseInt(dataID, 10) ];
+
+		console.log(updatedData, conditionString, conditionValues);
+
+
+		const result = await window.electronAPI.updateData({ tableName, data: updatedData, conditionString, conditionValues });
+
+	} catch (error) {
+		console.error('Error during update:', error);
+		Swal.fire({
+			title: 'Greška',
+			text: 'Došlo je do greške prilikom ažuriranja!',
+			icon: 'error',
+			confirmButtonText: 'OK'
+		});
+	}
+});
+
+window.electronAPI.onDataUpdated((result) => {
+	const swalResult = Swal.fire({
+		title: 'Uspeh',
+		text: 'Proizvod je uspešno azuriran!',
+		icon: 'success',
+		confirmButtonText: 'OK'
+	})
+		.then((result) => {
+			if (result.isConfirmed) {
+				window.electronAPI.fetchData('products', '*', 'ORDER BY code DESC');
+				resetProductInputs();
+				setTimeout(() => {
+					const codeInput = document.querySelector('[name=code]');
+					if (codeInput) {
+						codeInput.focus();
+					} else {
+						console.log('Ne postoji input polje za sifru!');
+					}
+				}, 0);
+			}
+		});
+});
+
 function createSanitizedText(text) {
-    return DOMPurify.sanitize(text);
+	return DOMPurify.sanitize(text);
 }
 

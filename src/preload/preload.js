@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     fetchData: (tableName, columns, condition) => ipcRenderer.send('fetch-data', { tableName, columns, condition }),
     onDataFetched: (callback) => ipcRenderer.on('data-fetched', (event, ...args) => callback(...args)),
     insertData: (tableName, data) => ipcRenderer.send('insert-data', { tableName, data }),
+    updateData: (updateProduct) => ipcRenderer.send('update-data', updateProduct),
+    onDataUpdated: (callback) => ipcRenderer.on('data-updated', (event, ...args) => callback(...args)),
     // Podaci o klijentima
     fetchClients: (tableName, columns, condition) => ipcRenderer.send('fetch-clients', { tableName, columns, condition }),
     onClientsFetched: (callback) => ipcRenderer.on('clients-fetched', (event, ...args) => callback(...args)),

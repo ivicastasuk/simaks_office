@@ -52,6 +52,8 @@ async function updateData(tableName, data, conditionString, conditionValues) {
 
         // Kreiranje SQL upita
         const query = `UPDATE \`${tableName}\` SET ${setClause} WHERE ${conditionString}`;
+        console.log(query);
+
 
         // Izvrsavanje upita
         const [ result ] = await connection.execute(query, queryValues);
