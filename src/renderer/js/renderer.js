@@ -1784,6 +1784,8 @@ window.electronAPI.onDataUpdated((result) => {
 			if (result.isConfirmed) {
 				window.electronAPI.fetchData('products', '*', 'ORDER BY code DESC');
 				resetProductInputs();
+				document.querySelector('button[name="updateData"]').disabled = true;
+				document.querySelector('button[name="insertData"]').disabled = false;
 				setTimeout(() => {
 					const codeInput = document.querySelector('[name=code]');
 					if (codeInput) {
