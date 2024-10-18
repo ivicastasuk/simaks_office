@@ -263,3 +263,12 @@ ipcMain.on('checkForDuplicateProduct', async (event, code, model) => {
         console.error('Error checking for duplicate product:', error);
     }
 });
+
+ipcMain.on('get-data-from-db', async (event, { tableName, columns, condition }) => {
+    try {
+        const data = await fetchData(tableName, columns, condition);
+        event.reply('data-retrieved-from-db', data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+});

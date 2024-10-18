@@ -13,7 +13,7 @@ if (empty($query) || empty($table)) {
     exit;
 }
 
-// Allowed tables for search (as a safety measure to prevent SQL injection)
+// Dozvoljene tabele za pretragu (radi sprečavanja SQL injekcija)
 $allowedTables = ['products', 'clients'];
 if (!in_array($table, $allowedTables)) {
     echo json_encode(['success' => false, 'message' => 'Invalid table']);
@@ -41,14 +41,33 @@ if (!$conn->set_charset("utf8mb4")) {
 
 $searchQuery = '%' . $query . '%';
 
-// Dynamic SQL statement based on table
+// Dinamička SQL izjava na osnovu tabele
 if ($table === 'products') {
-    $stmt = $conn->prepare("SELECT id, code, name, model, img_url, price, type, manufacturer, description, items, unit FROM products WHERE code COLLATE utf8mb4_general_ci LIKE ? OR name COLLATE utf8mb4_general_ci LIKE ? OR model COLLATE utf8mb4_general_ci LIKE ?");
+    $stmt = $conn->prepare("
+        SELECT id, code, name, model, img_url, price, type, manufacturer, description, items, unit
+        FROM products
+        WHERE
+            code COLLATE utf8mb4_general_ci LIKE ? OR
+            name COLLATE utf8mb4_general_ci LIKE ? OR
+            model COLLATE utf8mb4_general_ci LIKE ? OR
+            manufacturer COLLATE utf8mb4_general_ci LIKE ?
+    ");
+    $stmt->bind_param("ssss", $searchQuery, $searchQuery, $searchQuery, $searchQuery);
 } else if ($table === 'clients') {
-    $stmt = $conn->prepare("SELECT id, name, address, city, pib, mb FROM clients WHERE name COLLATE utf8mb4_general_ci LIKE ? OR city COLLATE utf8mb4_general_ci LIKE ? OR pib COLLATE utf8mb4_general_ci LIKE ?");
+    $stmt = $conn->prepare("
+        SELECT id, name, address, city, pib, mb
+        FROM clients
+        WHERE
+            name COLLATE utf8mb4_general_ci LIKE ? OR
+            city COLLATE utf8mb4_general_ci LIKE ? OR
+            pib COLLATE utf8mb4_general_ci LIKE ?
+    ");
+    $stmt->bind_param("sss", $searchQuery, $searchQuery, $searchQuery);
+} else {
+    echo json_encode([]);
+    exit;
 }
 
-$stmt->bind_param("sss", $searchQuery, $searchQuery, $searchQuery);
 $stmt->execute();
 $result = $stmt->get_result();
 

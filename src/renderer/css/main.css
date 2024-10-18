@@ -2592,6 +2592,10 @@ details.collapse summary::-webkit-details-marker {
   height: calc(100vh - 72px);
 }
 
+.max-h-64 {
+  max-height: 16rem;
+}
+
 .w-1\/2 {
   width: 50%;
 }
@@ -2638,6 +2642,10 @@ details.collapse summary::-webkit-details-marker {
 
 .w-full {
   width: 100%;
+}
+
+.min-w-full {
+  min-width: 100%;
 }
 
 .flex-1 {
@@ -2804,6 +2812,11 @@ details.collapse summary::-webkit-details-marker {
 .text-disabled {
   --tw-text-opacity: 1;
   color: rgb(100 116 139 / var(--tw-text-opacity));
+}
+
+.text-error {
+  --tw-text-opacity: 1;
+  color: var(--fallback-er,oklch(var(--er)/var(--tw-text-opacity)));
 }
 
 .outline {

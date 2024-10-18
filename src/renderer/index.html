@@ -229,14 +229,17 @@
 										<option value="G">G</option>
 									</select>
 								</td>
-								<td class="w-[8%]">
-									<input type="text" name="manufacturer" class="w-full input-standard">
+								<td class="w-[8%] relative">
+									<input type="text" name="manufacturer" id="manufacturer" class="w-full input-standard">
+									<div id="dropdownManufacturer" class="dropdown-box absolute top-8 left-0 p-2 border border-solid min-w-full max-h-64 overflow-y-auto z-10"></div>
 								</td>
-								<td class="w-[10%]">
-									<input type="text" name="name" class="w-full input-standard">
+								<td class="w-[10%] relative">
+									<input type="text" name="name" id="name" class="w-full input-standard">
+									<div id="dropdownName" class="dropdown-box absolute top-8 left-0 p-2 border border-solid min-w-full max-h-64 overflow-y-auto z-10"></div>
 								</td>
-								<td class="w-[6%]">
-									<input type="text" name="model" class="w-full input-standard">
+								<td class="w-[6%] relative">
+									<input type="text" name="model" id="model" class="w-full input-standard">
+									<div id="dropdownModel" class="dropdown-box absolute top-8 left-0 p-2 border border-solid min-w-full max-h-64 overflow-y-auto z-10"></div>
 								</td>
 								<td class="w-[5%]">
 									<div id="imageContainer" class="w-full flex justify-center items-center cursor-pointer">
@@ -265,6 +268,9 @@
 										</button>
 										<button name="updateData" class="cursor-pointer text-disabled" disabled>
 											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M22 13v3c0 1.1-.9 2-2 2h-3l1 1v2H6v-2l1-1H4c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h8v2H4v11h16v-3zm-7 2l-5-5h4V3h2v7h4z"/></svg>
+										</button>
+										<button name="clearInputs" class="cursor-pointer text-error">
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2m5 13.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12z"/></svg>
 										</button>
 									</div>
 								</td>
@@ -353,14 +359,14 @@
 								<label for="clientSelect">Izaberi klijenta:</label>
 								<div class="relative flex-1">
 									<input type="text" name="clientSelect" id="clientSelect" autocomplete="off" class="w-full input-search">
-									<div id="dropdownClients" class="dropdown-box absolute top-8 left-0 p-2 border border-solid w-full z-10"></div>
+									<div id="dropdownClients" class="dropdown-box absolute top-8 left-0 p-2 border border-solid w-full max-h-64 overflow-y-auto z-10"></div>
 								</div>
 							</div>
 							<div class="w-full flex justify-start items-center gap-4">
 								<label for="searchInput">Pretraži bazu artikala...</label>
 								<div class="relative flex-1">
 									<input type="text" name="searchInput" id="searchInput" autocomplete="off" class="input-search w-full">
-									<div id="dropdownList" class="dropdown-box absolute top-8 left-0 p-2 border border-solid w-full z-10"></div>
+									<div id="dropdownList" class="dropdown-box absolute top-8 left-0 p-2 border border-solid w-full max-h-64 overflow-y-auto z-10"></div>
 								</div>
 							</div>
 							<div class="w-full flex justify-start items-center gap-4">
@@ -371,8 +377,18 @@
 								<button id="resetForm" class="p-2 btn btn-primary btn-alert">RESETUJ PONUDU</button>
 								<button id="createPdf" class="p-2 btn btn-primary text-white">KREIRAJ PONUDU</button>
 							</div>
-							<div class="w-full">
-								<table id="searchResult" class="w-full"></table>
+							<div class="w-full flex flex-col justify-start items-start gap-4">
+								<div class="w-full flex justify-end items-center gap-4">
+									<button id="getOffers">PONUDE</button>
+								</div>
+								<table class="w-full">
+									<thead>
+										<tr>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody id="offers-list"></tbody>
+								</table>
 							</div>
 						</div>
 					</div>

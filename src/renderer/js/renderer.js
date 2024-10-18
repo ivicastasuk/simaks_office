@@ -998,6 +998,154 @@ async function createDropdownSearch(inputId, dropdownId, tableName, displayColum
 	});
 }
 
+createArticlesDropdownSearch('manufacturer', 'dropdownManufacturer', 'products', 'manufacturer');
+createArticlesDropdownSearch('name', 'dropdownName', 'products', 'name');
+createArticlesDropdownSearch('model', 'dropdownModel', 'products', 'model');
+
+// Funkcija za kreiranje dropdown pretrage za artikle
+async function createArticlesDropdownSearch(inputId, dropdownId, tableName, displayColumn) {
+    const searchInput = document.getElementById(inputId);
+    const dropdownList = document.getElementById(dropdownId);
+
+    let activeIndex = -1;
+    let dropdownItems = [];
+
+    searchInput.addEventListener('input', async () => {
+        const query = searchInput.value.trim();
+
+        // Sakrij dropdown ako nema upita
+        if (query.length === 0) {
+            dropdownList.innerHTML = '';
+            dropdownList.style.display = 'none';
+            return;
+        }
+
+        try {
+            // Slanje upita API-ju
+            const response = await fetch(`http://simaks/api/search.php?q=${encodeURIComponent(query)}&table=${tableName}`);
+            let results = await response.json();
+
+            // Filtriranje rezultata za jednu kolonu i uklanjanje duplikata
+            const uniqueValues = new Map();
+
+            results.forEach(result => {
+                // Dobijanje vrednosti iz specificirane kolone, neosetljivo na velika i mala slova
+                const value = result[displayColumn];
+
+                // Ako vrednost nije već u mapi, dodaj je
+                if (value && !uniqueValues.has(value.toLowerCase())) {
+                    uniqueValues.set(value.toLowerCase(), result);
+                }
+            });
+
+            // Konverzija mape u niz rezultata
+            const uniqueResults = Array.from(uniqueValues.values());
+
+            // Prikazivanje sadržaja u dropdown listi
+            if (uniqueResults.length > 0) {
+                dropdownList.innerHTML = '';
+                dropdownItems = uniqueResults;
+
+                uniqueResults.forEach((result, index) => {
+                    const item = document.createElement('div');
+                    item.classList.add('dropdown-item');
+
+                    // Prikaz vrednosti iz specificirane kolone
+                    item.textContent = result[displayColumn];
+                    item.setAttribute('data-index', index);
+
+                    // Event listener za klik mišem na stavku
+                    item.addEventListener('click', () => {
+                        selectArticlesResult(result, searchInput, dropdownId, displayColumn);
+                    });
+
+                    // Event listener za ulazak miša u stavku
+                    item.addEventListener('mouseenter', () => {
+                        activeIndex = index;
+                        highlightArticlesItem(dropdownList, activeIndex);
+                    });
+
+                    dropdownList.appendChild(item);
+                });
+                dropdownList.style.display = 'block';
+                activeIndex = -1; // Resetuj aktivni indeks
+            } else {
+                dropdownList.innerHTML = '<div class="dropdown-item">Nema rezultata</div>';
+                dropdownList.style.display = 'block';
+                dropdownItems = [];
+            }
+        } catch (error) {
+            console.error('Greška prilikom preuzimanja rezultata pretrage:', error);
+        }
+    });
+
+    // Event listener za gubljenje fokusa na input polju
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            dropdownList.style.display = 'none';
+        }, 200);
+    });
+
+    // Event listener za navigaciju preko tastature
+    searchInput.addEventListener('keydown', (event) => {
+        if (dropdownItems.length === 0) {
+            return;
+        }
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                if (activeIndex < dropdownItems.length - 1) {
+                    activeIndex++;
+                    highlightArticlesItem(dropdownList, activeIndex);
+                }
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                if (activeIndex > 0) {
+                    activeIndex--;
+                    highlightArticlesItem(dropdownList, activeIndex);
+                }
+                break;
+            case 'Enter':
+                event.preventDefault();
+                if (activeIndex >= 0 && activeIndex < dropdownItems.length) {
+                    const selectedResult = dropdownItems[activeIndex];
+                    selectArticlesResult(selectedResult, searchInput, dropdownId, displayColumn);
+                }
+                break;
+            default:
+                break;
+        }
+    });
+}
+
+// Funkcija za označavanje izabrane stavke u artiklima
+function highlightArticlesItem(dropdownList, activeIndex) {
+    Array.from(dropdownList.children).forEach((item, index) => {
+        if (index === activeIndex) {
+            item.classList.add('highlight');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('highlight');
+        }
+    });
+}
+
+// Funkcija za selektovanje izbora u dropdownu u artiklima
+function selectArticlesResult(result, searchInput, dropdownId, displayColumn) {
+    const dropdownList = document.getElementById(dropdownId);
+
+    // Postavi vrednost input polja na vrednost izabrane kolone
+    searchInput.value = result[displayColumn];
+
+    // Sakrij dropdown listu
+    dropdownList.style.display = 'none';
+
+    // Opcionalno: ovde možete pozvati funkciju koja dalje obrađuje izabrani rezultat
+    // displaySelectedArticlesItem(result);
+}
+
 // Funkcija za oznacavanje izabrane stavke
 function highlightItem(dropdownList, activeIndex) {
 	Array.from(dropdownList.children).forEach((item, index) => {
@@ -1030,11 +1178,11 @@ function selectResult(result, searchInput, dropdownId, tableName) {
 
 // Funkcija za prikazivanje selektovanog artikla - ubacivanje u templejt ponude
 async function displaySelectedItem(selectedItem, tableName) {
-	const displayContainer = document.getElementById('searchResult');
-	if (!displayContainer) {
-		console.error("Element 'searchResult' nije pronađen.");
-		return;
-	}
+	// const displayContainer = document.getElementById('searchResult');
+	// if (!displayContainer) {
+	// 	console.error("Element 'searchResult' nije pronađen.");
+	// 	return;
+	// }
 
 	if (tableName === 'products') {
 		// Prikaz za tabelu 'products'
@@ -1674,6 +1822,13 @@ async function resetProductInputs() {
 	document.getElementById('imgInput').value = '';
 	document.getElementById('imageContainer').style.backgroundImage = '';
 	document.getElementById('imagePreview').src = 'http://simaks/img/products/dummy.jpg';
+
+	document.querySelector('button[name="insertData"]').disabled = false;
+	document.querySelector('button[name="insertData"]').classList.remove('text-disabled');
+	document.querySelector('button[name="insertData"]').classList.add('text-primary');
+	document.querySelector('button[name="updateData"]').disabled = true;
+	document.querySelector('button[name="updateData"]').classList.remove('text-primary');
+	document.querySelector('button[name="updateData"]').classList.add('text-disabled');
 }
 
 async function checkForDuplicateProduct(code, model) {
@@ -1805,6 +1960,44 @@ window.electronAPI.onDataUpdated((result) => {
 			}
 		});
 });
+
+document.querySelector('button[name="clearInputs"]').addEventListener('click', () => {
+	resetProductInputs();
+});
+
+document.getElementById('getOffers').addEventListener('click', async () => {
+	try {
+		const offersData = await getDataFromDB('offers');
+		const offersList = document.getElementById('offers-list');
+		offersData.forEach((item) => {
+			const tr = document.createElement('tr');
+			tr.innerHTML = `
+				<td>${item.offer_number}</td>
+				<td>${item.status}</td>
+			`;
+			offersList.appendChild(tr);
+		});	
+	} catch (error) {
+		console.error('Greška pri preuzimanju ponuda:', error);
+	}
+});
+
+function getDataFromDB(tableName, columns = '*', condition = ''){
+    return new Promise((resolve, reject) => {
+        // Pošaljite zahtev main procesu
+        window.electronAPI.getDataFromDB(tableName, columns, condition);
+
+        // Postavite listener koji će čekati na podatke
+        const handleDataRetrieved = (data) => {
+            resolve(data);
+            // Uklonite listener nakon što dobijete podatke
+            window.electronAPI.offDataRetrievedFromDB(handleDataRetrieved);
+        };
+
+        // Slušajte događaj za povrat podataka
+        window.electronAPI.onDataRetrievedFromDB(handleDataRetrieved);
+    });
+}
 
 function createSanitizedText(text) {
 	return DOMPurify.sanitize(text);

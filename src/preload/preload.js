@@ -3,6 +3,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 console.log('Preload script loaded successfully!');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+    getDataFromDB: (tableName, columns, condition) => ipcRenderer.send('get-data-from-db', { tableName, columns, condition }),
+    onDataRetrievedFromDB: (callback) => ipcRenderer.on('data-retrieved-from-db', (event, ...args) => callback(...args)),
+    offDataRetrievedFromDB: (callback) => ipcRenderer.removeListener('data-retrieved-from-db', callback),
     // Podaci o artiklima
     fetchData: (tableName, columns, condition) => ipcRenderer.send('fetch-data', { tableName, columns, condition }),
     onDataFetched: (callback) => ipcRenderer.on('data-fetched', (event, ...args) => callback(...args)),
