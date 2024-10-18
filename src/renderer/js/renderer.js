@@ -1760,9 +1760,6 @@ document.querySelector('button[name="updateData"]').addEventListener('click', as
 		const conditionString = 'id = ?';
 		const conditionValues = [ parseInt(dataID, 10) ];
 
-		console.log(updatedData, conditionString, conditionValues);
-
-
 		const result = await window.electronAPI.updateData({ tableName, data: updatedData, conditionString, conditionValues });
 
 	} catch (error) {
