@@ -9,7 +9,8 @@ module.exports = {
 				secondary: '#2E4057',
 				accent: '#0892A5',
 				dark: '#102030',
-				light: '#FDFFFC'
+				light: '#FDFFFC',
+				disabled: '#64748B'
 			},
 			height: {
 				main: "calc(100vh - 32px)",

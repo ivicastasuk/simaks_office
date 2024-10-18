@@ -1699,7 +1699,11 @@ function populateFormWithProduct(rowData) {
 
 	document.querySelector('button[name="updateData"]').disabled = false;
 	document.querySelector('button[name="updateData"]').setAttribute('data', rowData.id);
+	document.querySelector('button[name="updateData"]').classList.add('text-primary');
+	document.querySelector('button[name="updateData"]').classList.remove('text-disabled');
 	document.querySelector('button[name="insertData"]').disabled = true;
+	document.querySelector('button[name="insertData"]').classList.add('text-disabled');
+	document.querySelector('button[name="insertData"]').classList.remove('text-primary');
 
 }
 
@@ -1785,7 +1789,11 @@ window.electronAPI.onDataUpdated((result) => {
 				window.electronAPI.fetchData('products', '*', 'ORDER BY code DESC');
 				resetProductInputs();
 				document.querySelector('button[name="updateData"]').disabled = true;
+				document.querySelector('button[name="updateData"]').classList.add('text-disabled');
+				document.querySelector('button[name="updateData"]').classList.remove('text-primary');
 				document.querySelector('button[name="insertData"]').disabled = false;
+				document.querySelector('button[name="insertData"]').classList.add('text-primary');
+				document.querySelector('button[name="insertData"]').classList.remove('text-disabled');
 				setTimeout(() => {
 					const codeInput = document.querySelector('[name=code]');
 					if (codeInput) {
