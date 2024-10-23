@@ -24,6 +24,10 @@ $servername = "localhost:3307";
 $dbUsername = "liridenet";
 $dbPassword = "liridenetns";
 $dbname = "simaks_office";
+// $servername = "sql.freedb.tech:3307";
+// $dbUsername = "freedb_liridenet";
+// $dbPassword = "v$ummPNqzzs4D89";
+// $dbname = "freedb_simaks_office";
 
 // Create connection
 $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);

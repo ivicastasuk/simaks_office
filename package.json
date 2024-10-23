@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dev": "npx tailwindcss -i ./temp/input.css -o ./src/renderer/css/main.css --watch"
+    "dev": "npx tailwindcss -i ./temp/input.css -o ./src/renderer/css/main.css --watch",
+    "build": "electron-builder"
   },
   "keywords": [],
   "author": "",
@@ -14,11 +15,27 @@
   "devDependencies": {
     "@ilovepdf/ilovepdf-nodejs": "^0.3.0",
     "daisyui": "^4.10.2",
-    "electron": "^31.3.1"
+    "electron": "^31.3.1",
+    "electron-builder": "^25.1.8"
   },
   "dependencies": {
     "mysql2": "^3.9.7",
     "puppeteer": "^23.5.1",
     "tailwindcss": "^3.4.3"
+  },
+  "build": {
+    "appId": "rs.simaks",
+    "productName": "Offery",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable"
+    }
   }
 }
