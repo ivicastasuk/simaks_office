@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			el.classList.add('desc');
 		}
 	});
+
+	listOffers();
 });
 
 // Login forma
@@ -1244,6 +1246,7 @@ async function displaySelectedItem(selectedItem, tableName) {
 		const tdCode = document.createElement('td');
 		tdCode.textContent = selectedItem.code;
 		tdCode.style.textAlign = 'center';
+		tdCode.setAttribute('cellName', `sifra`);
 		row.appendChild(tdCode);
 
 		// 3. Naziv koji kombinuje proizvođača, ime i model, sa tabelom unutar ćelije
@@ -1264,6 +1267,7 @@ async function displaySelectedItem(selectedItem, tableName) {
 		// Druga ćelija prvog reda - kombinovani naziv proizvoda (proizvođač, naziv, model)
 		const cellCombinedName = document.createElement('td');
 		cellCombinedName.style.textAlign = 'left';
+		cellCombinedName.setAttribute('cellName', `naziv`);
 		const combinedString = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
 		cellCombinedName.textContent = combinedString;
 		cellCombinedName.style.fontWeight = "600";
@@ -1279,6 +1283,7 @@ async function displaySelectedItem(selectedItem, tableName) {
 			productImage.alt = `${selectedItem.manufacturer} ${selectedItem.name} ${selectedItem.model}`;
 			productImage.style.maxWidth = '32px'; // Ograničenje maksimalne širine
 			productImage.style.height = 'auto'; // Održavanje proporcija slike
+			productImage.setAttribute('cellName', `slika`); // Dodaj atribut za identifikaciju
 			cellImage.appendChild(productImage);
 			row1.appendChild(cellImage);
 		}
@@ -1296,6 +1301,7 @@ async function displaySelectedItem(selectedItem, tableName) {
 		}
 		cellDescription.style.textAlign = 'left';
 		cellDescription.textContent = selectedItem.description; // Postavi opis proizvoda
+		cellDescription.setAttribute('cellName', `opis`);
 		row2.appendChild(cellDescription);
 
 		// Dodavanje drugog reda u internu tabelu
@@ -1311,6 +1317,7 @@ async function displaySelectedItem(selectedItem, tableName) {
 		const tdJM = document.createElement('td');
 		tdJM.textContent = selectedItem.unit;
 		tdJM.style.textAlign = 'center';
+		tdJM.setAttribute('cellName', `jm`);
 		row.appendChild(tdJM);
 
 		// 5. Kolicina
@@ -1640,9 +1647,11 @@ async function saveOfferData(offerData) {
 	const rows = document.querySelectorAll('#ponudaRow tbody > tr');
 	rows.forEach(row => {
 		const item = {
-			code: row.cells[ 1 ].textContent,
-			description: row.cells[ 2 ].textContent,
-			unit: row.cells[ 3 ].textContent,
+			code: parseInt(parseFormattedNumber(row.querySelector('[cellName="sifra"]').innerText)) || '',
+			productName: row.querySelector('[cellName="naziv"]').textContent || '',
+			description: row.querySelector('[cellName="opis"]').textContent || '',
+			image: row.querySelector('[cellName="slika"]') ? row.querySelector('[cellName="slika"]').src.split('/').pop() : '',
+			unit: row.querySelector('[cellName="jm"]').textContent || 'kom',
 			quantity: parseFloat(parseFormattedNumber(row.querySelector('[cellName="kolicina"]').innerText)) || '',
 			price: parseFloat(parseFormattedNumber(row.querySelector('[cellName="cena"]').innerText)) || '',
 			discount: parseFloat(parseFormattedNumber(row.querySelector('[cellName="rabat"]').innerText)),
@@ -1704,51 +1713,73 @@ function renumberRows() {
 }
 
 document.getElementById("resetForm").addEventListener('click', () => {
-	// Resetovanje input polja
-	const formInputs = document.querySelectorAll('input, textarea, select');
-	formInputs.forEach(input => {
-		if (input.type === 'checkbox' || input.type === 'radio') {
-			input.checked = false; // Resetuj čekirane inpute
-		} else {
-			input.value = ''; // Resetuj sve tekstualne inpute, textarea i select
+	resetOffer().then(() => {
+		// Prikaz poruke o uspešnom resetovanju
+		Swal.fire({
+			title: 'Resetovano!',
+			text: 'Formular je uspešno resetovan.',
+			icon: 'success',
+			confirmButtonText: 'OK'
+		});
+	}).catch(error => {
+		console.error('Error resetting form:', error);
+		Swal.fire({
+			title: 'Greška',
+			text: 'Došlo je do greške prilikom resetovanja formulara.',
+			icon: 'error',
+			confirmButtonText: 'OK'
+		});
+	});
+});
+
+// Funckija za resetovanje formulara i ponude
+function resetOffer() {
+	return new Promise((resolve, reject) => {
+		try {
+			// Resetovanje input polja
+			const formInputs = document.querySelectorAll('input, textarea, select');
+			formInputs.forEach(input => {
+				if (input.type === 'checkbox' || input.type === 'radio') {
+					input.checked = false; // Resetuj čekirane inpute
+				} else {
+					input.value = ''; // Resetuj sve tekstualne inpute, textarea i select
+				}
+			});
+
+			// Brisanje svih redova iz tabele
+			const tableBody = document.querySelector('#ponudaRow tbody');
+			while (tableBody.firstChild) {
+				tableBody.removeChild(tableBody.firstChild);
+			}
+
+			// Resetovanje polja za kupca
+			document.getElementById('nazivKupca').textContent = '';
+			document.getElementById('adresaKupca').textContent = '';
+			document.getElementById('mestoKupca').textContent = '';
+			document.getElementById('pibKupca').textContent = '';
+			document.getElementById('mbKupca').textContent = '';
+
+			// Resetovanje prikaza sume (ako postoji)
+			document.getElementById('sumaIznos').textContent = '0,00';
+			document.getElementById('sumaPDV').textContent = '0,00';
+			document.getElementById('sumaUkupno').textContent = '0,00';
+			document.getElementById('finalUkupno').textContent = '0,00';
+			document.getElementById('finalRabat').textContent = '0,00';
+			document.getElementById('finalIznos').textContent = '0,00';
+			document.getElementById('finalPDV').textContent = '0,00';
+			document.getElementById('finalPlacanje').textContent = '0,00';
+
+			dataFill();
+			fillUserData();
+			setPotentialOfferNumber();
+
+			resolve();
+		} catch (error) {
+			reject(error);
 		}
 	});
 
-	// Brisanje svih redova iz tabele
-	const tableBody = document.querySelector('#ponudaRow tbody');
-	while (tableBody.firstChild) {
-		tableBody.removeChild(tableBody.firstChild);
-	}
-
-	// Resetovanje polja za kupca
-	document.getElementById('nazivKupca').textContent = '';
-	document.getElementById('adresaKupca').textContent = '';
-	document.getElementById('mestoKupca').textContent = '';
-	document.getElementById('pibKupca').textContent = '';
-	document.getElementById('mbKupca').textContent = '';
-
-	// Resetovanje prikaza sume (ako postoji)
-	document.getElementById('sumaIznos').textContent = '0,00';
-	document.getElementById('sumaPDV').textContent = '0,00';
-	document.getElementById('sumaUkupno').textContent = '0,00';
-	document.getElementById('finalUkupno').textContent = '0,00';
-	document.getElementById('finalRabat').textContent = '0,00';
-	document.getElementById('finalIznos').textContent = '0,00';
-	document.getElementById('finalPDV').textContent = '0,00';
-	document.getElementById('finalPlacanje').textContent = '0,00';
-
-	dataFill();
-	fillUserData();
-	setPotentialOfferNumber();
-
-	// Prikaz poruke o uspešnom resetovanju
-	Swal.fire({
-		title: 'Resetovano!',
-		text: 'Formular je uspešno resetovan.',
-		icon: 'success',
-		confirmButtonText: 'OK'
-	});
-});
+}
 
 // JavaScript funkcionalnost za pomeranje separatora
 const divider = document.getElementById('divider');
@@ -1809,6 +1840,7 @@ async function setPotentialOfferNumber() {
 	}
 }
 
+// Funkcija za resetovanje polja za unos novog artikla
 async function resetProductInputs() {
 	document.querySelector('[name=code]').value = '';
 	document.querySelector('[name=manufacturer]').value = '';
@@ -1833,6 +1865,7 @@ async function resetProductInputs() {
 	document.getElementById('data-container').scrollTop = 0;
 }
 
+// Funkcija za proveru da li artikal već postoji u bazi
 async function checkForDuplicateProduct(code, model) {
 	return new Promise((resolve, reject) => {
 		window.electronAPI.checkForDuplicateProduct(code, model);
@@ -1843,6 +1876,7 @@ async function checkForDuplicateProduct(code, model) {
 	});
 }
 
+// Funkcija za popunjavanje forme sa podacima o proizvodu
 function populateFormWithProduct(rowData) {
 	document.querySelector('input[name="code"]').value = rowData.code;
 	document.querySelector('select[name="type"]').value = rowData.type;
@@ -1864,6 +1898,7 @@ function populateFormWithProduct(rowData) {
 
 }
 
+// Event listener za klik na dugme za azuriranje podataka o proizvodu
 document.querySelector('button[name="updateData"]').addEventListener('click', async (event) => {
 	const dataID = event.currentTarget.getAttribute('data');
 	const code = parseInt(document.querySelector("input[name=code]").value.trim(), 10);
@@ -1963,26 +1998,252 @@ window.electronAPI.onDataUpdated((result) => {
 		});
 });
 
+
+// Event listener za klik na dugme za resetovanje polja za unos novog artikla
 document.querySelector('button[name="clearInputs"]').addEventListener('click', () => {
 	resetProductInputs();
 });
 
+// Event listener za klik na dugme za iispisivanje dosadasnjih ponuda
 document.getElementById('getOffers').addEventListener('click', async () => {
 	try {
-		const offersData = await getDataFromDB('offers');
-		const offersList = document.getElementById('offers-list');
-		offersData.forEach((item) => {
-			const tr = document.createElement('tr');
-			tr.innerHTML = `
-				<td>${item.offer_number}</td>
-				<td>${item.status}</td>
-			`;
-			offersList.appendChild(tr);
-		});
+		// const offersData = await getDataFromDB('offers');
+		listOffers();
 	} catch (error) {
 		console.error('Greška pri preuzimanju ponuda:', error);
 	}
 });
+
+// Funkcija za ispisivanje podataka o ponudama u vidu liste
+async function listOffers(table = 'offers') {
+	const offersData = await getDataFromDB(table);
+	const offersList = document.getElementById('offers-list');
+	offersList.innerHTML = ''; // Očisti prethodne podatke
+	offersData.forEach((offer) => {
+		const tr = document.createElement('tr');
+		tr.innerHTML = `
+			<td>${offer.offer_number}</td>
+			<td>${offer.client_name}</td>
+			<td class="text-right">${formatNumber(parseFloat(offer.total_with_vat))}</td>
+		`;
+		tr.classList.add('list-hover');
+		tr.addEventListener('click', async () => {
+			printSelectedOffer(offer);
+		});
+		offersList.appendChild(tr);
+	});
+}
+
+// Funkcija za ispisivanje podataka o klijentu iz ponude
+async function printSelectedOffer(offer) {
+	try {
+		await resetOffer();
+		document.getElementById("nazivKupca").textContent = offer.client_name;
+		document.getElementById('adresaKupca').textContent = offer.client_address;
+		document.getElementById('mestoKupca').textContent = offer.client_city;
+		document.getElementById('pibKupca').textContent = offer.client_pib;
+		document.getElementById('mbKupca').textContent = offer.client_mb;
+
+		const offerData = await getDataFromDB('offer_items', '*', `WHERE offer_id = ${offer.id}`);
+		offerData.forEach((item) => {
+			addRowToTable(item);
+		});
+	} catch (error) {
+		console.error('Error printing selected offer:', error);
+		Swal.fire({
+			title: 'Greška',
+			text: 'Došlo je do greške prilikom prikazivanja ponude.',
+			icon: 'error',
+			confirmButtonText: 'OK',
+		});
+	};
+}
+
+async function addRowToTable(selectedItem) {
+	// Selektujemo tbody element tabele
+	const tableBody = document.querySelector('#ponudaRow tbody');
+
+	// Kreiranje novog reda (tr)
+	const row = document.createElement('tr');
+	row.style.position = 'relative';
+
+	// 1. Redni broj (baziran na broju trenutnih redova u tabeli)
+	const rowIndex = tableBody.rows.length + 1;
+	const tdIndex = document.createElement('td');
+	const tdIndexDiv = document.createElement('div');
+	tdIndexDiv.style.textAlign = 'center';
+	tdIndexDiv.style.display = 'flex';
+	tdIndexDiv.style.flexDirection = 'column';
+	tdIndexDiv.style.justifyContent = 'center';
+	tdIndexDiv.style.alignItems = 'center';
+	// Dodavanje rednog broja
+	const indexP = document.createElement('p');
+	indexP.textContent = rowIndex; // Redni broj (od 1 pa naviše)
+	tdIndexDiv.appendChild(indexP);
+	// Dodavanje ikonice za brisanje reda
+	const btnDelete = document.createElement('button');
+	btnDelete.classList.add("btnDelete");
+	btnDelete.classList.add(`btn-${rowIndex}`);
+	btnDelete.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="#FF0000" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+
+	// Dodavanje funkcionalnosti za brisanje
+	btnDelete.addEventListener('click', () => {
+		row.remove(); // Brisanje trenutnog reda
+		renumberRows(); // Poziv funkcije za ponovno numerisanje
+		calculateItems();
+		calculateSumm();
+	});
+
+	tdIndexDiv.appendChild(btnDelete);
+	tdIndex.appendChild(tdIndexDiv);
+	row.appendChild(tdIndex);
+
+	// 2. Šifra
+	const tdCode = document.createElement('td');
+	tdCode.textContent = selectedItem.code;
+	tdCode.style.textAlign = 'center';
+	tdCode.setAttribute('cellName', `sifra`);
+	row.appendChild(tdCode);
+
+	// 3. Naziv koji kombinuje proizvođača, ime i model, sa tabelom unutar ćelije
+	const tdCombined = document.createElement('td');
+	tdCombined.style.textAlign = 'left';
+
+	// Kreiranje nove tabele unutar ćelije tdCombined
+	const tableInsideTd = document.createElement('table');
+
+	// Stilizacija interne tabele da se uklopi unutar ćelije
+	tableInsideTd.style.width = '100%';
+	tableInsideTd.classList.add("secondary-table");
+	tableInsideTd.style.fontSize = '7pt';
+
+	// Kreiranje prvog reda tabele za sliku i naziv proizvoda
+	const row1 = document.createElement('tr');
+
+	// Druga ćelija prvog reda - kombinovani naziv proizvoda (proizvođač, naziv, model)
+	const cellCombinedName = document.createElement('td');
+	cellCombinedName.style.textAlign = 'left';
+	cellCombinedName.setAttribute('cellName', `naziv`);
+	const combinedString = selectedItem.product_name;
+	cellCombinedName.textContent = combinedString;
+	cellCombinedName.style.fontWeight = "600";
+	cellCombinedName.style.textTransform = "uppercase";
+	row1.appendChild(cellCombinedName);
+	if (selectedItem.image != '') {
+		// Prva ćelija prvog reda - za sliku proizvoda
+		const cellImage = document.createElement('td');
+		cellImage.style.textAlign = 'center'; // Središnji poravnavanje slike
+		cellImage.style.width = '32px'; // Opcionalno, možeš postaviti širinu za ćeliju
+		const productImage = document.createElement('img');
+		productImage.src = `http://simaks/img/products/${selectedItem.image}`; // Postavi URL slike proizvoda
+		productImage.alt = `${selectedItem.product_name} - ${selectedItem.description}`;
+		productImage.style.maxWidth = '32px'; // Ograničenje maksimalne širine
+		productImage.style.height = 'auto'; // Održavanje proporcija slike
+		productImage.setAttribute('cellName', `slika`); // Dodaj atribut za identifikaciju
+		cellImage.appendChild(productImage);
+		row1.appendChild(cellImage);
+	}
+
+	// Dodavanje prvog reda u internu tabelu
+	tableInsideTd.appendChild(row1);
+
+	// Kreiranje drugog reda tabele za opis proizvoda
+	const row2 = document.createElement('tr');
+
+	// Druga ćelija drugog reda - opis proizvoda
+	const cellDescription = document.createElement('td');
+	if (document.getElementById('checkImage').checked == true) {
+		cellDescription.colSpan = 2;
+	}
+	cellDescription.style.textAlign = 'left';
+	cellDescription.textContent = selectedItem.description; // Postavi opis proizvoda
+	cellDescription.setAttribute('cellName', `opis`);
+	row2.appendChild(cellDescription);
+
+	// Dodavanje drugog reda u internu tabelu
+	tableInsideTd.appendChild(row2);
+
+	// Dodavanje kreirane tabele u kombinovanu ćeliju
+	tdCombined.appendChild(tableInsideTd);
+
+	// Dodavanje kombinovane ćelije u red glavne tabele
+	row.appendChild(tdCombined);
+
+	// 4. Jedinica mere
+	const tdJM = document.createElement('td');
+	tdJM.textContent = selectedItem.unit;
+	tdJM.style.textAlign = 'center';
+	tdJM.setAttribute('cellName', `jm`);
+	row.appendChild(tdJM);
+
+	// 5. Kolicina
+	const tdKolicina = document.createElement('td');
+	tdKolicina.setAttribute('contenteditable', 'true');
+	tdKolicina.style.textAlign = 'center';
+	tdKolicina.setAttribute('cellName', `kolicina`);
+	tdKolicina.textContent = selectedItem.quantity;
+	row.appendChild(tdKolicina);
+
+	// 6. Cena (price)
+	const tdPrice = document.createElement('td');
+	tdPrice.textContent = formatNumber(parseFormattedNumber(selectedItem.price));
+	tdPrice.setAttribute('contenteditable', 'true');
+	tdPrice.style.textAlign = 'center';
+	tdPrice.setAttribute('cellName', `cena`);
+	row.appendChild(tdPrice);
+
+	// 7. Rabat
+	const tdRabat = document.createElement('td');
+	tdRabat.setAttribute('contenteditable', 'true');
+	tdRabat.style.textAlign = 'center';
+	tdRabat.setAttribute('cellName', `rabat`);
+	tdRabat.textContent = selectedItem.discount;
+	row.appendChild(tdRabat);
+
+	// 8. Cena sa rabatom
+	const tdCenaRabat = document.createElement('td');
+	tdCenaRabat.style.textAlign = 'center';
+	tdCenaRabat.setAttribute('cellName', `cenarabat`);
+	row.appendChild(tdCenaRabat);
+
+	// 9. Iznos
+	const tdIznos = document.createElement('td');
+	tdIznos.style.textAlign = 'center';
+	tdIznos.setAttribute('cellName', `iznos`);
+	row.appendChild(tdIznos);
+
+	// 10. PDV %
+	const tdPdv = document.createElement('td');
+	tdPdv.setAttribute('contenteditable', 'true');
+	tdPdv.style.textAlign = 'center';
+	tdPdv.setAttribute('cellName', `pdv`);
+	tdPdv.textContent = '20';
+	row.appendChild(tdPdv);
+
+	// 11. Iznos PDV-a
+	const tdIznosPdv = document.createElement('td');
+	const iznos = parseFormattedNumber(selectedItem.price);
+	const iznosPdv = iznos * (20 / 100);
+	tdIznosPdv.textContent = iznosPdv.toFixed(2);
+	tdIznosPdv.style.textAlign = 'center';
+	tdIznosPdv.setAttribute('cellName', `iznospdv`);
+	row.appendChild(tdIznosPdv);
+
+	// 12. Ukupno
+	const tdUkupno = document.createElement('td');
+	tdUkupno.textContent = '';
+	tdUkupno.style.textAlign = 'center';
+	tdUkupno.setAttribute('cellName', `ukupno`);
+	row.appendChild(tdUkupno);
+
+	// Dodavanje reda u tabelu
+	tableBody.appendChild(row);
+
+	await calculateItems();
+	await calculateSumm();
+	await addListeners();
+
+}
 
 function getDataFromDB(tableName, columns = '*', condition = '') {
 	return new Promise((resolve, reject) => {
@@ -2001,7 +2262,8 @@ function getDataFromDB(tableName, columns = '*', condition = '') {
 	});
 }
 
+
+// Funkcija za sanitizaciju unosa
 function createSanitizedText(text) {
 	return DOMPurify.sanitize(text);
 }
-

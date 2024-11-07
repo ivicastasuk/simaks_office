@@ -18,12 +18,21 @@
     [contenteditable] {
         cursor: text;
     }
+
+    [data-theme='dark'] .list-hover {
+        @apply cursor-pointer hover:bg-slate-900;
+    }
+
+    [data-theme='emerald'] .list-hover {
+        @apply cursor-pointer hover:bg-gray-100;
+    }
 }
 
 @layer components {
     .btn-alert {
         @apply bg-red-700 text-white border-red-700 hover:bg-red-800 hover:border-red-800;
     }
+
     .menu-item {
         @apply text-base hover:bg-primary cursor-pointer;
     }

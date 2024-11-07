@@ -354,7 +354,7 @@
 					<div id="pagePreview" class="w-1/2 h-view p-4 overflow-auto flex justify-center items-start"></div>
 					<div id="divider" class="divider h-view m-0"></div>
 					<div class="w-1/2 h-view p-4 flex flex-col justify-start items-start gap-4">
-						<div class="w-full flex flex-col justify-start items-start gap-4">
+						<div class="w-full h-full flex flex-col justify-start items-start gap-4">
 							<div class="w-full flex justify-start items-center gap-4">
 								<label for="clientSelect">Izaberi klijenta:</label>
 								<div class="relative flex-1">
@@ -377,18 +377,25 @@
 								<button id="resetForm" class="p-2 btn btn-primary btn-alert">RESETUJ PONUDU</button>
 								<button id="createPdf" class="p-2 btn btn-primary text-white">KREIRAJ PONUDU</button>
 							</div>
-							<div class="w-full flex flex-col justify-start items-start gap-4">
+							<div class="w-full flex-1 flex flex-col justify-start items-start gap-4">
 								<div class="w-full flex justify-end items-center gap-4">
-									<button id="getOffers">PONUDE</button>
+									<button id="getOffers">IZLISTAJ PONUDE</button>
 								</div>
-								<table class="w-full">
-									<thead>
-										<tr>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody id="offers-list"></tbody>
-								</table>
+								<div id="offers-view" class="relative w-full flex-1">
+									<div class="w-full h-[300px] overflow-y-scroll border border-gray-400 rounded">
+										<table class="w-full">
+											<thead class="bg-primary text-gray-100 font-bold sticky">
+												<tr>
+													<th class="text-left">BP</th>
+													<th class="text-left">Naziv klijenta</th>
+													<th class="text-right">Iznos ponude (sa PDV-om)</th>
+												</tr>
+											</thead>
+											<tbody id="offers-list"></tbody>
+										</table>
+									</div>
+									<div id="offer-details" class="hidden absolute w-full h-16"></div>
+								</div>
 							</div>
 						</div>
 					</div>

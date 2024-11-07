@@ -264,15 +264,17 @@ async function saveOfferToDatabase(offerData) {
         // Ubacivanje stavki u tabelu "offer_items"
         const itemQuery = `
             INSERT INTO offer_items (
-                offer_id, code, description, unit, quantity, price, discount, price_with_discount, amount, vat_percent, vat_amount, total
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                offer_id, code, product_name, description, image, unit, quantity, price, discount, price_with_discount, amount, vat_percent, vat_amount, total
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         for (const item of offerData.items) {
             const itemValues = [
                 offerId,
                 item.code,
+                item.productName,
                 item.description,
+                item.image,
                 item.unit,
                 item.quantity,
                 item.price,
