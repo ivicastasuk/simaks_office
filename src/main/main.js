@@ -272,3 +272,13 @@ ipcMain.on('get-data-from-db', async (event, { tableName, columns, condition }) 
         console.error('Error fetching data:', error);
     }
 });
+
+ipcMain.on('update-status', async (event, { tableName, data, conditionString, conditionValues }) => {
+    try {
+        const result = await updateData(tableName, data, conditionString, conditionValues);
+        event.reply('status-updated', result);
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+});
+

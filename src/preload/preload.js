@@ -44,4 +44,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Provera duplikata
     checkForDuplicateProduct: (code, model) => ipcRenderer.send('checkForDuplicateProduct', code, model),
     onDuplicateCheckResult: (callback) => ipcRenderer.once('duplicateCheckResult', (event, result) => callback(result)),
+    updateStatus: (updateStatus) => ipcRenderer.send('update-status', updateStatus),
+    onStatusUpdated: (callback) => ipcRenderer.on('status-updated', (event, ...args) => callback(...args)),
+
 });

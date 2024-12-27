@@ -1998,7 +1998,6 @@ window.electronAPI.onDataUpdated((result) => {
 		});
 });
 
-
 // Event listener za klik na dugme za resetovanje polja za unos novog artikla
 document.querySelector('button[name="clearInputs"]').addEventListener('click', () => {
 	resetProductInputs();
@@ -2016,23 +2015,58 @@ document.getElementById('getOffers').addEventListener('click', async () => {
 
 // Funkcija za ispisivanje podataka o ponudama u vidu liste
 async function listOffers(table = 'offers') {
-	const offersData = await getDataFromDB(table);
-	const offersList = document.getElementById('offers-list');
-	offersList.innerHTML = ''; // Očisti prethodne podatke
-	offersData.forEach((offer) => {
-		const tr = document.createElement('tr');
-		tr.innerHTML = `
-			<td>${offer.offer_number}</td>
-			<td>${offer.client_name}</td>
-			<td class="text-right">${formatNumber(parseFloat(offer.total_with_vat))}</td>
-		`;
-		tr.classList.add('list-hover');
-		tr.addEventListener('click', async () => {
-			printSelectedOffer(offer);
-		});
-		offersList.appendChild(tr);
-	});
+    const offersData = await getDataFromDB(table);
+    const offersList = document.getElementById('offers-list');
+    offersList.innerHTML = ''; // Očisti prethodne podatke
+    offersData.forEach((offer) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${offer.offer_number}</td>
+            <td>${offer.client_name}</td>
+            <td class="text-right">${formatNumber(parseFloat(offer.total_with_vat))}</td>
+            <td class="text-center">
+                <span class="status-icon ${offer.status === 'accepted' ? 'text-green-500' : 'text-gray-500'} cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="currentColor"/>
+                    </svg>
+                </span>
+            </td>
+        `;
+        tr.classList.add('list-hover');
+        tr.addEventListener('click', async () => {
+            printSelectedOffer(offer);
+        });
+
+        // Dodaj event listener za promenu statusa
+        tr.querySelector('.status-icon').addEventListener('click', async (event) => {
+            event.stopPropagation(); // Spreči klik na red
+            const newStatus = offer.status === 'accepted' ? 'pending' : 'accepted';
+            await updateOfferStatus(offer.id, newStatus);
+            // listOffers(); // Osveži listu ponuda
+        });
+
+        offersList.appendChild(tr);
+    });
 }
+
+// Funkcija za ažuriranje statusa ponude
+async function updateOfferStatus(offerId, newStatus) {
+    try {
+        await window.electronAPI.updateStatus({
+            tableName: 'offers',
+            data: { status: newStatus },
+            conditionString: 'id = ?',
+            conditionValues: [offerId]
+        });
+    } catch (error) {
+        console.error('Error updating offer status:', error);
+    }
+}
+
+window.electronAPI.onStatusUpdated((result) => {
+    // Osveži listu ponuda nakon uspešnog ažuriranja statusa
+    listOffers();
+});
 
 // Funkcija za ispisivanje podataka o klijentu iz ponude
 async function printSelectedOffer(offer) {

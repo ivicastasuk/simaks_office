@@ -2861,9 +2861,24 @@ details.collapse summary::-webkit-details-marker {
   color: rgb(243 244 246 / var(--tw-text-opacity));
 }
 
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity));
+}
+
+.text-green-500 {
+  --tw-text-opacity: 1;
+  color: rgb(34 197 94 / var(--tw-text-opacity));
+}
+
 .text-primary {
   --tw-text-opacity: 1;
   color: rgb(74 187 107 / var(--tw-text-opacity));
+}
+
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity));
 }
 
 .text-slate-700 {
@@ -2891,4 +2906,20 @@ details.collapse summary::-webkit-details-marker {
 
 #titlebar .nobar {
   -webkit-app-region: no-drag;
+}
+
+.status-icon.updating {
+  animation: spin 1s linear infinite;
+  color: #ccc;
+  /* Promenite boju ikone dok se ažurira */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
