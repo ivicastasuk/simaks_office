@@ -1,6 +1,6 @@
 <?php
 
-$passwordHash = password_hash('budisava', PASSWORD_DEFAULT);
+$passwordHash = password_hash('mirjana', PASSWORD_DEFAULT);
 echo $passwordHash;
 
 ?>
