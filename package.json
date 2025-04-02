@@ -15,13 +15,13 @@
   "devDependencies": {
     "@ilovepdf/ilovepdf-nodejs": "^0.3.0",
     "daisyui": "^4.10.2",
-    "electron": "^31.3.1",
-    "electron-builder": "^25.1.8"
+    "electron": "^35.1.2",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
-    "mysql2": "^3.9.7",
+    "mysql2": "^3.14.0",
     "puppeteer": "^24.5.0",
-    "tailwindcss": "^3.4.3"
+    "tailwindcss": "^3.4.17"
   },
   "build": {
     "appId": "rs.simaks",
